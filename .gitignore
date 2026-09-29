@@ -43,3 +43,5 @@ next-env.d.ts
 
 # superpowers plan-execution workspace (ledger/briefs, not source)
 .superpowers/
+dev-design-check.log
+*.log

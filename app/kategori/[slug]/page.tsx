@@ -27,17 +27,24 @@ export default async function CategoryPage({
   const articles = await getArticlesByCategory(slug);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-brand-charcoal">{category.label}</h1>
-      {articles.length === 0 ? (
-        <p className="mt-6 text-brand-charcoal/60">Belum ada berita di kategori ini.</p>
-      ) : (
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
+    <main className="section">
+      <div className="container">
+        <div className="section__head">
+          <h1 className="section__title">
+            <span className="section__rule" />
+            {category.label}
+          </h1>
         </div>
-      )}
+        {articles.length === 0 ? (
+          <p style={{ color: "var(--ink-mute)" }}>Belum ada berita di kategori ini.</p>
+        ) : (
+          <div className="story-grid">
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
