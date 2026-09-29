@@ -38,4 +38,44 @@ describe("parseFeedXml", () => {
     expect(items[0].link).toBe("https://a.com/1");
     expect(items[1].link).toBe("https://b.com/2");
   });
+
+  it("extracts a plain-text excerpt from an HTML description, truncated to ~30 words", () => {
+    const words = Array.from({ length: 40 }, (_, i) => `kata${i}`).join(" ");
+    const xml = `<?xml version="1.0"?>
+      <rss><channel>
+        <item>
+          <title>Judul</title>
+          <link>https://example.com/a</link>
+          <description><![CDATA[<img src="x.jpg"/>${words}]]></description>
+        </item>
+      </channel></rss>`;
+    const items = parseFeedXml(xml);
+    expect(items[0].excerpt).not.toBeNull();
+    expect(items[0].excerpt).not.toContain("<img");
+    expect(items[0].excerpt!.split(/\s+/).length).toBeLessThanOrEqual(30);
+    expect(items[0].excerpt!.startsWith("kata0")).toBe(true);
+  });
+
+  it("decodes HTML entities in the title and excerpt", () => {
+    const xml = `<?xml version="1.0"?>
+      <rss><channel>
+        <item>
+          <title>Untung &amp; Rugi di Pasar Saham</title>
+          <link>https://example.com/b</link>
+          <description>Data &quot;terbaru&quot; hari ini</description>
+        </item>
+      </channel></rss>`;
+    const items = parseFeedXml(xml);
+    expect(items[0].title).toBe("Untung & Rugi di Pasar Saham");
+    expect(items[0].excerpt).toBe('Data "terbaru" hari ini');
+  });
+
+  it("has no excerpt when there is no description tag", () => {
+    const xml = `<?xml version="1.0"?>
+      <rss><channel>
+        <item><title>Tanpa Deskripsi</title><link>https://example.com/c</link></item>
+      </channel></rss>`;
+    const items = parseFeedXml(xml);
+    expect(items[0].excerpt).toBeNull();
+  });
 });

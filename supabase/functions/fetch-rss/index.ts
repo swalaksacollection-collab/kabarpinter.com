@@ -4,16 +4,10 @@ import { parseFeedXml } from "./parse.ts";
 const MIN_SCORE = 40;
 const RECENCY_MAX_HOURS = 48;
 const RECENCY_PEAK_HOURS = 2;
+const FETCH_TIMEOUT_MS = 10_000;
+const THROTTLE_MINUTES = 5;
+const USER_AGENT = "KabarpinterBot/1.0 (+https://kabarpinter.com)";
 
-// Full keyword lists, matching lib/scoring.ts exactly (verified by that
-// file's own tests). An earlier, trimmed-down copy of these lists lived
-// here and caused a real production bug: against a live ANTARA feed, all
-// 30 fetched items scored under MIN_SCORE=40 because the sparse keyword
-// sets rarely matched ordinary (non-clickbait) Indonesian headlines,
-// combined with min_score=40 requiring either a theme match (35 pts) or
-// several smaller signals to stack up. Caught by manually triggering the
-// deployed function and finding `inserted: 0` on real data, not by unit
-// tests (which only exercised the parsing, not full-feed scoring).
 const VIRAL_KEYWORDS = {
   tier1: ["viral", "heboh", "geger", "mengejutkan", "terungkap", "bocor", "cuan", "untung besar"],
   tier2: ["rahasia", "fakta", "inilah", "ternyata", "bikin", "tips", "cara", "peluang"],
@@ -63,6 +57,14 @@ function scoreItem(title: string, pubDate: string | null, hasImage: boolean): nu
   return Math.round(score);
 }
 
+function isTooOld(pubDate: string | null): boolean {
+  if (!pubDate) return false;
+  const parsed = new Date(pubDate).getTime();
+  if (Number.isNaN(parsed)) return false;
+  const hours = (Date.now() - parsed) / 3_600_000;
+  return hours >= RECENCY_MAX_HOURS;
+}
+
 function slugify(title: string, link: string): string {
   const base = title
     .toLowerCase()
@@ -71,11 +73,8 @@ function slugify(title: string, link: string): string {
     .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
-    .slice(0, 60);
-  // `articles.slug` is UNIQUE, but two different articles (different
-  // external_url) can title-slugify identically. Append a short,
-  // deterministic hash of the link so the slug stays unique without an
-  // extra existence query.
+    .slice(0, 60)
+    .replace(/-+$/, "");
   let hash = 0;
   for (let i = 0; i < link.length; i++) {
     hash = (hash * 31 + link.charCodeAt(i)) | 0;
@@ -90,46 +89,102 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const { data: sources } = await supabase
+  // This function has no per-caller authentication (verify_jwt is off,
+  // since it's invoked by pg_cron with no user session, and the anon
+  // key needed to satisfy verify_jwt is itself public - it would add no
+  // real protection). Instead, self-throttle: if a run completed very
+  // recently, skip real work entirely rather than re-fetching all 6
+  // upstream feeds. This bounds the cost of the endpoint being publicly
+  // reachable (its URL is in a public GitHub repo) without needing any
+  // secret-management infrastructure this project doesn't have.
+  const { data: lastRun } = await supabase
+    .from("articles")
+    .select("created_at")
+    .eq("source_type", "rss")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastRun) {
+    const minutesSinceLastRun = (Date.now() - new Date(lastRun.created_at).getTime()) / 60_000;
+    if (minutesSinceLastRun < THROTTLE_MINUTES) {
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "throttled", minutesSinceLastRun }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+
+  const { data: sources, error: sourcesError } = await supabase
     .from("sources")
     .select("*")
     .eq("enabled", true);
+
+  if (sourcesError) {
+    return new Response(
+      JSON.stringify({ inserted: 0, errors: [`sources query: ${sourcesError.message}`] }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
 
   let inserted = 0;
   const errors: string[] = [];
 
   for (const source of sources ?? []) {
     try {
-      const res = await fetch(source.feed_url);
+      const res = await fetch(source.feed_url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: { "User-Agent": USER_AGENT },
+      });
+      if (!res.ok) {
+        errors.push(`${source.name}: HTTP ${res.status}`);
+        continue;
+      }
       const xml = await res.text();
+      // A dead feed doesn't always fail at the HTTP level - Kontan's feed
+      // URL now serves a normal 200 HTML page instead of XML. res.ok alone
+      // can't catch that; check the content actually looks like a feed
+      // before silently reporting "0 items" as if nothing were wrong.
+      if (!xml.includes("<item")) {
+        errors.push(`${source.name}: response did not look like an RSS/XML feed`);
+        continue;
+      }
       const items = parseFeedXml(xml);
 
       for (const item of items) {
+        if (isTooOld(item.pubDate)) continue;
+
         const score = scoreItem(item.title, item.pubDate, !!item.imageUrl);
         if (score < MIN_SCORE) continue;
 
         const category = source.category_slug ?? matchTheme(item.title);
 
-        const { error } = await supabase.from("articles").upsert(
-          {
-            source_type: "rss",
-            status: "published",
-            title: item.title,
-            slug: slugify(item.title, item.link),
-            excerpt: null,
-            external_url: item.link,
-            image_url: item.imageUrl,
-            category_slug: category,
-            score,
-            source_name: source.name,
-            published_at: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-          },
-          { onConflict: "external_url", ignoreDuplicates: true }
-        );
-        // A returned {error} does not throw - it must be surfaced explicitly,
-        // or a failing write looks identical to "nothing new to insert".
+        const { data: upserted, error } = await supabase
+          .from("articles")
+          .upsert(
+            {
+              source_type: "rss",
+              status: "published",
+              title: item.title,
+              slug: slugify(item.title, item.link),
+              excerpt: item.excerpt,
+              external_url: item.link,
+              image_url: item.imageUrl,
+              category_slug: category,
+              score,
+              source_name: source.name,
+              published_at: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+            },
+            { onConflict: "external_url", ignoreDuplicates: true }
+          )
+          .select("id");
+
         if (error) errors.push(`${source.name} upsert: ${error.message}`);
-        else inserted++;
+        // ignoreDuplicates makes a duplicate a no-op (no error, no
+        // returned row) rather than an update - only count it as
+        // inserted when a row actually came back, so `inserted` means
+        // "new articles this run", not "items that didn't error".
+        else if (upserted && upserted.length > 0) inserted++;
       }
     } catch (err) {
       // Per Global Constraints: one dead/malformed source must not block the rest.

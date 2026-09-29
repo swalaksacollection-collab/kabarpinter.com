@@ -3,14 +3,42 @@ export type FeedItem = {
   link: string;
   pubDate: string | null;
   imageUrl: string | null;
+  excerpt: string | null;
 };
+
+const ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+};
+
+function decodeEntities(text: string): string {
+  return text
+    .replace(/&(amp|lt|gt|quot|apos|nbsp);/g, (_, name) => ENTITIES[name])
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
 
 function extractTag(block: string, tag: string): string | null {
   const match = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
   if (!match) return null;
-  return match[1]
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, "$1")
+  return decodeEntities(
+    match[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, "$1").trim()
+  );
+}
+
+function extractExcerpt(block: string): string | null {
+  const raw = extractTag(block, "description");
+  if (!raw) return null;
+  const plainText = raw
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
+  if (!plainText) return null;
+  return plainText.split(" ").slice(0, 30).join(" ");
 }
 
 export function parseFeedXml(xml: string): FeedItem[] {
@@ -31,6 +59,7 @@ export function parseFeedXml(xml: string): FeedItem[] {
       link,
       pubDate: extractTag(block, "pubDate"),
       imageUrl: imageMatch ? imageMatch[1] : null,
+      excerpt: extractExcerpt(block),
     });
   }
 
