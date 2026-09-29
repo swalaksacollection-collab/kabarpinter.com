@@ -3,7 +3,7 @@ export function Footer() {
     <footer className="mt-16 border-t border-brand-charcoal/10 bg-brand-charcoal py-10 text-brand-cream">
       <div className="mx-auto max-w-6xl px-4 text-sm">
         <p className="text-lg font-bold">
-          Kabar<span className="text-brand-amber">Pinter</span>
+          Kabar<span className="text-brand-amber">Pinter.com</span>
         </p>
         <p className="mt-2 max-w-xl text-brand-cream/70">
           Portal berita tren viral, kebijakan, peluang karir, dan cerita UMKM
