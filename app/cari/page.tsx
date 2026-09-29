@@ -1,13 +1,14 @@
 import { getPublishedArticles } from "@/lib/articles";
-import { filterArticles } from "@/lib/search";
+import { filterArticles, normalizeQueryParam } from "@/lib/search";
 import { ArticleCard } from "@/components/ArticleCard";
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const { q = "" } = await searchParams;
+  const params = await searchParams;
+  const q = normalizeQueryParam(params.q);
   const all = await getPublishedArticles(100);
   const results = filterArticles(all, q);
 

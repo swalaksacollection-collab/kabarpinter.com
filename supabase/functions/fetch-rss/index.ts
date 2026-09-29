@@ -65,6 +65,17 @@ function isTooOld(pubDate: string | null): boolean {
   return hours >= RECENCY_MAX_HOURS;
 }
 
+// `new Date(unparseable).toISOString()` throws a RangeError. That throw
+// was previously uncaught at the point of use, inside the per-source
+// try/catch that wraps the whole item loop - so one item with a
+// malformed pubDate aborted every remaining item from that source, not
+// just itself. Isolate the parse so a bad date degrades to "now" instead.
+function toIsoOrNow(pubDate: string | null): string {
+  if (!pubDate) return new Date().toISOString();
+  const parsed = new Date(pubDate);
+  return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+}
+
 function slugify(title: string, link: string): string {
   const base = title
     .toLowerCase()
@@ -173,7 +184,7 @@ Deno.serve(async () => {
               category_slug: category,
               score,
               source_name: source.name,
-              published_at: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+              published_at: toIsoOrNow(item.pubDate),
             },
             { onConflict: "external_url", ignoreDuplicates: true }
           )

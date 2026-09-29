@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { filterArticles } from "./search";
+import { filterArticles, normalizeQueryParam } from "./search";
 import type { Article } from "./types";
 
 const sample: Article[] = [
@@ -23,5 +23,23 @@ describe("filterArticles", () => {
 
   it("returns an empty array when nothing matches", () => {
     expect(filterArticles(sample, "zzz-no-match")).toHaveLength(0);
+  });
+});
+
+describe("normalizeQueryParam", () => {
+  it("returns the string as-is for a single value", () => {
+    expect(normalizeQueryParam("gaji")).toBe("gaji");
+  });
+
+  it("returns an empty string for undefined", () => {
+    expect(normalizeQueryParam(undefined)).toBe("");
+  });
+
+  it("takes the first value when the param is duplicated (?q=a&q=b)", () => {
+    expect(normalizeQueryParam(["a", "b"])).toBe("a");
+  });
+
+  it("returns an empty string for an empty array", () => {
+    expect(normalizeQueryParam([])).toBe("");
   });
 });
