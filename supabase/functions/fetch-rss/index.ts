@@ -5,15 +5,30 @@ const MIN_SCORE = 40;
 const RECENCY_MAX_HOURS = 48;
 const RECENCY_PEAK_HOURS = 2;
 
+// Full keyword lists, matching lib/scoring.ts exactly (verified by that
+// file's own tests). An earlier, trimmed-down copy of these lists lived
+// here and caused a real production bug: against a live ANTARA feed, all
+// 30 fetched items scored under MIN_SCORE=40 because the sparse keyword
+// sets rarely matched ordinary (non-clickbait) Indonesian headlines,
+// combined with min_score=40 requiring either a theme match (35 pts) or
+// several smaller signals to stack up. Caught by manually triggering the
+// deployed function and finding `inserted: 0` on real data, not by unit
+// tests (which only exercised the parsing, not full-feed scoring).
+const VIRAL_KEYWORDS = {
+  tier1: ["viral", "heboh", "geger", "mengejutkan", "terungkap", "bocor", "cuan", "untung besar"],
+  tier2: ["rahasia", "fakta", "inilah", "ternyata", "bikin", "tips", "cara", "peluang"],
+  tier3: ["pertama", "baru", "terbaru", "eksklusif", "curhat", "cerita", "penting", "wajib"],
+};
+
 const THEME_KEYWORDS: Record<string, string[]> = {
-  "tren-viral": ["viral", "tren", "fyp", "tiktok", "mendunia", "fenomena", "heboh", "ramai"],
-  "peluang-bisnis": ["peluang", "bisnis", "usaha", "cuan", "untung", "modal kecil", "reseller"],
-  "karir-skill": ["lowongan", "kerja", "karir", "gaji", "skill", "freelance", "cpns"],
-  "konsumen-data": ["konsumen", "belanja", "shopee", "tokopedia", "survei"],
-  "ekspor-impor": ["ekspor", "impor", "tiongkok", "bea cukai", "supplier"],
-  "umkm-inspirasi": ["umkm", "pengusaha muda", "startup", "bangkrut", "sukses"],
-  "ekonomi-uang": ["rupiah", "saham", "ihsg", "inflasi", "investasi"],
-  politik: ["prabowo", "dpr", "menteri", "pilkada", "korupsi"],
+  "tren-viral": ["viral", "tren", "fyp", "tiktok", "mendunia", "fenomena", "heboh", "ramai", "gen z", "milenial", "lifestyle"],
+  "peluang-bisnis": ["peluang", "bisnis", "usaha", "cuan", "untung", "modal kecil", "omset", "omzet", "jualan", "reseller", "dropship", "side hustle", "wirausaha"],
+  "karir-skill": ["lowongan", "kerja", "karir", "gaji", "skill", "sertifikasi", "pelatihan", "fresh graduate", "wfh", "remote", "freelance", "lpdp", "beasiswa", "magang", "cpns", "pppk", "bumn"],
+  "konsumen-data": ["konsumen", "belanja", "shopee", "tokopedia", "tiktok shop", "live shopping", "preferensi", "data", "survei", "riset", "gaya hidup", "kebiasaan"],
+  "ekspor-impor": ["ekspor", "impor", "china", "temu", "tiongkok", "umkm go global", "bea cukai", "tarif", "kuota", "produk lokal", "sourcing", "supplier"],
+  "umkm-inspirasi": ["umkm", "umkm sukses", "pengusaha muda", "startup", "founder", "mahasiswa bisnis", "modal nekat", "bangkrut", "gagal", "comeback", "sukses", "inspiratif"],
+  "ekonomi-uang": ["rupiah", "dolar", "saham", "ihsg", "bitcoin", "kripto", "inflasi", "bbm", "subsidi", "pajak", "investasi", "reksadana", "emas", "bank indonesia"],
+  politik: ["prabowo", "jokowi", "gibran", "pdip", "gerindra", "dpr", "menteri", "pilkada", "demo", "kpk", "korupsi"],
 };
 
 function matchTheme(text: string): string | null {
@@ -29,8 +44,9 @@ function matchTheme(text: string): string | null {
 function scoreItem(title: string, pubDate: string | null, hasImage: boolean): number {
   let score = 0;
   const t = title.toLowerCase();
-  if (["viral", "heboh", "cuan"].some((k) => t.includes(k))) score += 25;
-  else if (["tips", "cara", "peluang"].some((k) => t.includes(k))) score += 15;
+  if (VIRAL_KEYWORDS.tier1.some((k) => t.includes(k))) score += 25;
+  else if (VIRAL_KEYWORDS.tier2.some((k) => t.includes(k))) score += 25 * 0.6;
+  else if (VIRAL_KEYWORDS.tier3.some((k) => t.includes(k))) score += 25 * 0.3;
 
   if (pubDate) {
     const hours = (Date.now() - new Date(pubDate).getTime()) / 3_600_000;
@@ -110,7 +126,10 @@ Deno.serve(async () => {
           },
           { onConflict: "external_url", ignoreDuplicates: true }
         );
-        if (!error) inserted++;
+        // A returned {error} does not throw - it must be surfaced explicitly,
+        // or a failing write looks identical to "nothing new to insert".
+        if (error) errors.push(`${source.name} upsert: ${error.message}`);
+        else inserted++;
       }
     } catch (err) {
       // Per Global Constraints: one dead/malformed source must not block the rest.
