@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAF7F2;
+  --foreground: #1F1D1A;
 }
 
 @theme inline {
@@ -19,12 +19,16 @@
   --color-brand-olive: #4A6B2C;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Kabarpinter.com is an intentionally light, warm-paper editorial design
+   (cream background, charcoal ink) - not a dark/light dual theme. The
+   create-next-app starter's automatic `prefers-color-scheme: dark`
+   override was left in place after re-skinning with the brand palette,
+   which meant charcoal text rendered on a near-black body background for
+   any visitor with a dark-mode OS/browser preference - unreadable low
+   contrast. Found via mobile visual QA (Task 21), not caught by any
+   earlier check since build/type-check/tests never render against a
+   dark color-scheme. Removed rather than "fixed" - a dark variant was
+   never part of the design. */
 
 body {
   background: var(--background);
