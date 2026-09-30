@@ -1,4 +1,5 @@
 import { createServerClient } from "./supabase/server";
+import { createPublicClient } from "./supabase/public";
 import type { Article } from "./types";
 
 // Embeds the contributor's profile (display name + bio/credential) via
@@ -8,11 +9,26 @@ import type { Article } from "./types";
 // null for RSS articles (no contributor_id).
 const SELECT_WITH_AUTHOR = "*, author:contributor_id(display_name, bio)";
 
+// Lean column list for LIST views (home, category, region, search, ...).
+// Omits `body` (full article text, only needed on the article page and the
+// editor review queue) so list responses stay small and fast.
+const LIST_SELECT =
+  "id, source_type, status, title, slug, excerpt, external_url, image_url, " +
+  "category_slug, region_slug, score, source_name, contributor_id, " +
+  "published_at, created_at, updated_at, author:contributor_id(display_name, bio)";
+
+// Default page size for category / region listings (previously unbounded).
+const LIST_PAGE_SIZE = 30;
+
+// ---------------------------------------------------------------------
+// PUBLIC reads - use the cookie-free client so pages stay cacheable (ISR).
+// ---------------------------------------------------------------------
+
 export async function getPublishedArticles(limit = 30): Promise<Article[]> {
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
-    .select(SELECT_WITH_AUTHOR)
+    .select(LIST_SELECT)
     .eq("status", "published")
     .order("published_at", { ascending: false })
     .limit(limit);
@@ -25,11 +41,11 @@ export async function getPublishedArticles(limit = 30): Promise<Article[]> {
 // so a viral story from last week doesn't get stuck at the top forever),
 // falling back to recency to break ties.
 export async function getTopArticles(limit = 8, windowHours = 48): Promise<Article[]> {
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const since = new Date(Date.now() - windowHours * 3_600_000).toISOString();
   const { data, error } = await supabase
     .from("articles")
-    .select(SELECT_WITH_AUTHOR)
+    .select(LIST_SELECT)
     .eq("status", "published")
     .gte("published_at", since)
     .order("score", { ascending: false })
@@ -39,23 +55,27 @@ export async function getTopArticles(limit = 8, windowHours = 48): Promise<Artic
   return (data as unknown as Article[]) ?? [];
 }
 
-export async function getArticlesByCategory(categorySlug: string): Promise<Article[]> {
-  const supabase = await createServerClient();
+export async function getArticlesByCategory(
+  categorySlug: string,
+  limit = LIST_PAGE_SIZE
+): Promise<Article[]> {
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
-    .select(SELECT_WITH_AUTHOR)
+    .select(LIST_SELECT)
     .eq("status", "published")
     .eq("category_slug", categorySlug)
-    .order("published_at", { ascending: false });
+    .order("published_at", { ascending: false })
+    .limit(limit);
   if (error) throw error;
   return (data as unknown as Article[]) ?? [];
 }
 
 export async function getRegionalArticles(limit = 30): Promise<Article[]> {
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
-    .select(SELECT_WITH_AUTHOR)
+    .select(LIST_SELECT)
     .eq("status", "published")
     .not("region_slug", "is", null)
     .order("published_at", { ascending: false })
@@ -64,14 +84,18 @@ export async function getRegionalArticles(limit = 30): Promise<Article[]> {
   return (data as unknown as Article[]) ?? [];
 }
 
-export async function getArticlesByRegion(regionSlug: string): Promise<Article[]> {
-  const supabase = await createServerClient();
+export async function getArticlesByRegion(
+  regionSlug: string,
+  limit = LIST_PAGE_SIZE
+): Promise<Article[]> {
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
-    .select(SELECT_WITH_AUTHOR)
+    .select(LIST_SELECT)
     .eq("status", "published")
     .eq("region_slug", regionSlug)
-    .order("published_at", { ascending: false });
+    .order("published_at", { ascending: false })
+    .limit(limit);
   if (error) throw error;
   return (data as unknown as Article[]) ?? [];
 }
@@ -80,10 +104,10 @@ export async function getArticlesByRegion(regionSlug: string): Promise<Article[]
 // RSS-aggregated news), across any category/topic. Mirrors the
 // /daerah pattern: a cross-cutting view independent of category_slug.
 export async function getOpinionArticles(limit = 30): Promise<Article[]> {
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
-    .select(SELECT_WITH_AUTHOR)
+    .select(LIST_SELECT)
     .eq("status", "published")
     .eq("source_type", "contributor")
     .order("published_at", { ascending: false })
@@ -92,8 +116,9 @@ export async function getOpinionArticles(limit = 30): Promise<Article[]> {
   return (data as unknown as Article[]) ?? [];
 }
 
+// Full row (incl. `body`) - the only public query that needs it.
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
     .select(SELECT_WITH_AUTHOR)
@@ -103,6 +128,10 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   if (error) throw error;
   return data as unknown as Article | null;
 }
+
+// ---------------------------------------------------------------------
+// SESSION-DEPENDENT reads - must keep the cookie-based server client.
+// ---------------------------------------------------------------------
 
 // A contributor's own articles (any status) - used by their dashboard.
 // Relies on the "articles: contributor can read own" RLS policy, so the

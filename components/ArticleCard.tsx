@@ -2,14 +2,31 @@ import Link from "next/link";
 import type { Article } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
 
-export function ArticleCard({ article }: { article: Article }) {
+// `priority` = above-the-fold card: load its image eagerly. Everything else
+// stays lazy. Explicit width/height (matches the 16:10 media box) reserves
+// space so the grid doesn't jump while images arrive.
+export function ArticleCard({
+  article,
+  priority = false,
+}: {
+  article: Article;
+  priority?: boolean;
+}) {
   return (
     <article className="story story--card">
       <Link href={`/artikel/${article.slug}`}>
         {article.image_url && (
           <div className="story__media">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={article.image_url} alt="" loading="lazy" />
+            <img
+              src={article.image_url}
+              alt=""
+              width={640}
+              height={400}
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              decoding="async"
+            />
           </div>
         )}
         <div className="story__badges">

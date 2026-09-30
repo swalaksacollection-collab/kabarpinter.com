@@ -6,6 +6,11 @@ import { REGIONS, isKnownRegion, regionLabel } from "@/lib/regions";
 
 export const revalidate = 300;
 
+// Pre-render every known region (same approach as /kategori/[slug]).
+export function generateStaticParams() {
+  return REGIONS.map((r) => ({ slug: r.slug }));
+}
+
 export default async function RegionPage({
   params,
 }: {

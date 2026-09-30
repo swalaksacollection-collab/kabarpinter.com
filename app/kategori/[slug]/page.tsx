@@ -1,12 +1,20 @@
 import { notFound } from "next/navigation";
 import { getArticlesByCategory } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
-import { createServerClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export const revalidate = 300;
 
+// Pre-render every category at build time; ISR (revalidate above) keeps
+// them fresh. Unknown slugs still resolve on demand and 404 via notFound().
+export async function generateStaticParams() {
+  const supabase = createPublicClient();
+  const { data } = await supabase.from("categories").select("slug");
+  return (data ?? []).map((c) => ({ slug: c.slug as string }));
+}
+
 async function getCategory(slug: string) {
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("categories")
     .select("*")
@@ -21,10 +29,13 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const category = await getCategory(slug);
-  if (!category) notFound();
 
-  const articles = await getArticlesByCategory(slug);
+  // Independent queries - run them in parallel instead of back-to-back.
+  const [category, articles] = await Promise.all([
+    getCategory(slug),
+    getArticlesByCategory(slug),
+  ]);
+  if (!category) notFound();
 
   return (
     <main className="section">
@@ -39,8 +50,8 @@ export default async function CategoryPage({
           <p style={{ color: "var(--ink-mute)" }}>Belum ada berita di kategori ini.</p>
         ) : (
           <div className="story-grid">
-            {articles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
+            {articles.map((article, i) => (
+              <ArticleCard key={article.id} article={article} priority={i < 3} />
             ))}
           </div>
         )}
