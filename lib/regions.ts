@@ -5,6 +5,8 @@ export const REGIONS = [
   { slug: "sumut", label: "Sumut" },
   { slug: "sulsel", label: "Sulsel" },
   { slug: "bali", label: "Bali" },
+  { slug: "aceh", label: "Aceh" },
+  { slug: "papua", label: "Papua" },
 ] as const;
 
 export function regionLabel(slug: string | null): string {

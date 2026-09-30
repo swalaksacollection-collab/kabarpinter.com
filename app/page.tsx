@@ -36,13 +36,17 @@ function LeadStory({ article }: { article: Article }) {
   return (
     <article className="story story--lead">
       <Link href={`/artikel/${article.slug}`}>
-        {article.image_url && (
+        {article.image_url ? (
           <div className="story__media">
             <div className="story__badges">
               <StoryBadges article={article} />
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={article.image_url} alt="" />
+          </div>
+        ) : (
+          <div className="story__badges" style={{ marginBottom: 12 }}>
+            <StoryBadges article={article} />
           </div>
         )}
         <div className="story__meta">
@@ -90,9 +94,16 @@ export default async function HomePage() {
     );
   }
 
-  const [lead, ...rest] = articles;
-  const side = rest.slice(0, 3);
-  const gridArticles = rest.slice(3);
+  // The hero (lead + side) is reserved for breaking RSS news - opinion
+  // pieces have their own showcase (Daily Brief top slot, /opini, their
+  // category badge) and shouldn't bump a photo breaking story out of
+  // the homepage's main hero just for being the most recently published
+  // row. They still appear further down in the regular grid.
+  const heroEligible = articles.filter((a) => a.source_type !== "contributor");
+  const [lead, ...restHero] = heroEligible;
+  const side = restHero.slice(0, 3);
+  const heroIds = new Set([lead?.id, ...side.map((a) => a.id)]);
+  const gridArticles = articles.filter((a) => !heroIds.has(a.id));
 
   return (
     <main>
@@ -100,18 +111,20 @@ export default async function HomePage() {
         <SponsorBanner />
       </div>
 
-      <section className="hero">
-        <div className="container">
-          <div className="hero__grid">
-            <LeadStory article={lead} />
-            <div className="hero__side">
-              {side.map((a) => (
-                <SideStory key={a.id} article={a} />
-              ))}
+      {lead && (
+        <section className="hero">
+          <div className="container">
+            <div className="hero__grid">
+              <LeadStory article={lead} />
+              <div className="hero__side">
+                {side.map((a) => (
+                  <SideStory key={a.id} article={a} />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <LiveWidget />
 
