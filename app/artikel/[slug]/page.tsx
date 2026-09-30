@@ -9,7 +9,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { PokokBerita } from "@/components/PokokBerita";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
-import { upgradeImageUrl, imageSrcSet, IMAGE_SIZES } from "@/lib/images";
+import { upgradeImageUrl, imageSrcSet, isImageAllowed, IMAGE_SIZES } from "@/lib/images";
 
 export const revalidate = 60;
 
@@ -26,7 +26,8 @@ export async function generateMetadata({
 
   const description = describeText(article.excerpt) || describeText(article.body);
   const path = `/artikel/${article.slug}`;
-  const images = article.image_url
+  const hasImage = Boolean(article.image_url) && isImageAllowed(article.image_url);
+  const images = hasImage && article.image_url
     ? [{ url: upgradeImageUrl(article.image_url, "hero") ?? article.image_url, alt: article.title }]
     : [DEFAULT_OG_IMAGE];
 
@@ -47,7 +48,7 @@ export async function generateMetadata({
       images,
     },
     twitter: {
-      card: article.image_url ? "summary_large_image" : "summary",
+      card: hasImage ? "summary_large_image" : "summary",
       title: article.title,
       description: description || undefined,
       images: images.map((i) => i.url),
@@ -119,7 +120,7 @@ export default async function ArticlePage({
 
           <ShareButtons title={article.title} path={`/artikel/${article.slug}`} />
 
-          {article.image_url && (
+          {article.image_url && isImageAllowed(article.image_url) && (
             <figure className="article__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

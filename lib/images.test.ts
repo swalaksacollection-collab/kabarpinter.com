@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { upgradeImageUrl, imageSrcSet } from "./images";
+import { upgradeImageUrl, imageSrcSet, isImageAllowed } from "./images";
 
 describe("upgradeImageUrl - ANTARA", () => {
   it("raises a tiny 255x170 thumbnail to 800x533 for cards", () => {
@@ -134,5 +134,29 @@ describe("imageSrcSet", () => {
     expect(imageSrcSet(null)).toBeUndefined();
     expect(imageSrcSet(undefined)).toBeUndefined();
     expect(imageSrcSet("")).toBeUndefined();
+  });
+});
+
+describe("isImageAllowed (hosts whose terms forbid embedding their photos)", () => {
+  it("blocks every Tribunnews host (terms: personal/non-commercial use, no embedding)", () => {
+    expect(isImageAllowed("https://asset.tribunnews.com/sig=/148x99/filters:quality(30)/a.jpg")).toBe(false);
+    expect(isImageAllowed("https://asset-2.tribunnews.com/tribunnews/foto/a.jpg")).toBe(false);
+    expect(isImageAllowed("https://www.tribunnews.com/x.jpg")).toBe(false);
+  });
+  it("does not confuse lookalike hosts", () => {
+    expect(isImageAllowed("https://nottribunnews.com/a.jpg")).toBe(true);
+    expect(isImageAllowed("https://example.com/tribunnews.com/a.jpg")).toBe(true);
+  });
+  it("allows the other sources and contributor uploads", () => {
+    expect(isImageAllowed("https://cdn.antaranews.com/cache/800x533/a.jpg")).toBe(true);
+    expect(isImageAllowed("https://akcdn.detik.net.id/visual/x.jpeg?w=360")).toBe(true);
+    expect(isImageAllowed("https://cdn0-production-images-kly.akamaized.net/s=/673x379/x.jpg")).toBe(true);
+    expect(isImageAllowed("https://abc.supabase.co/storage/v1/object/public/contributor-uploads/u/1.jpg")).toBe(true);
+  });
+  it("is false when there is nothing to show", () => {
+    expect(isImageAllowed(null)).toBe(false);
+    expect(isImageAllowed(undefined)).toBe(false);
+    expect(isImageAllowed("")).toBe(false);
+    expect(isImageAllowed("bukan url")).toBe(false);
   });
 });

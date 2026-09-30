@@ -7,6 +7,30 @@
 // Signed CDNs (Tribunnews, Liputan6/kly) reject any modified URL, so they are
 // deliberately left alone here.
 
+// ---------------------------------------------------------------------------
+// Hosts whose photos we do NOT display. Tribunnews' terms of use (checked
+// 2026-10-01) allow its content (incl. photos) only for personal,
+// non-commercial use, forbid automated extraction, and forbid embedding it on
+// other sites without written permission. Kabarpinter is a commercial site, and
+// Tribun's RSS thumbnail is only 148x99 (blurry) anyway. To show Tribunnews
+// photos again, get written permission first, then remove the entry below.
+// Titles/excerpts/links to the source are unaffected by this gate.
+// ---------------------------------------------------------------------------
+const BLOCKED_IMAGE_HOSTS: RegExp[] = [/(^|\.)tribunnews\.com$/i];
+
+// The single gate every <img>/og:image/JSON-LD image must pass. False when
+// there is nothing to show (null/empty/unparseable) or the host is blocked.
+export function isImageAllowed(url: string | null | undefined): boolean {
+  if (!url) return false;
+  let host: string;
+  try {
+    host = new URL(url.replace(/&amp;/g, "&")).hostname;
+  } catch {
+    return false;
+  }
+  return !BLOCKED_IMAGE_HOSTS.some((re) => re.test(host));
+}
+
 export type ImageSize = "card" | "hero";
 
 // Target width (px) to request per display context.
@@ -101,7 +125,7 @@ export const IMAGE_SIZES = {
 //   anything else    -> 0 (unknown, lowest priority)
 // ---------------------------------------------------------------------------
 export function maxImageWidth(url: string | null | undefined): number {
-  if (!url) return 0;
+  if (!url || !isImageAllowed(url)) return 0;
   const clean = url.replace(/&amp;/g, "&");
 
   if (ANTARA_RE.test(clean)) return ANTARA_WIDTHS[ANTARA_WIDTHS.length - 1];

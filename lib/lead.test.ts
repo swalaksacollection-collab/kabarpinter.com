@@ -18,9 +18,9 @@ describe("maxImageWidth (best width obtainable for the photo)", () => {
     expect(maxImageWidth("https://img.antaranews.com/cache/800x533/2026/a/thumb/b.jpg")).toBe(1200);
     expect(maxImageWidth(DETIK)).toBe(1440);
   });
-  it("reads the fixed size of signed CDNs from the url", () => {
+  it("reads the fixed size of signed CDNs from the url (Tribun is blocked -> 0)", () => {
     expect(maxImageWidth(KLY)).toBe(673);
-    expect(maxImageWidth(TRIBUN)).toBe(148);
+    expect(maxImageWidth(TRIBUN)).toBe(0); // blocked host: never shown, so it never counts
   });
   it("trusts contributor uploads and treats unknown/empty as 0", () => {
     expect(maxImageWidth(UPLOAD)).toBe(1600);
@@ -47,7 +47,7 @@ describe("pickLead", () => {
   });
 
   it("prefers an article with a photo over one without", () => {
-    const list = [art("1", null), art("2", TRIBUN)];
+    const list = [art("1", null), art("2", KLY)];
     expect(pickLead(list)?.id).toBe("2");
   });
 

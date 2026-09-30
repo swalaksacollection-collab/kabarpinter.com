@@ -100,6 +100,14 @@ describe("articleJsonLd", () => {
     expect("image" in ld).toBe(false);
   });
 
+  it("omits the image when the host forbids embedding its photos (Tribunnews)", () => {
+    const ld = articleJsonLd({
+      ...base,
+      image_url: "https://asset.tribunnews.com/sig=/148x99/filters:quality(30)/a.jpg",
+    }) as unknown as LD;
+    expect("image" in ld).toBe(false);
+  });
+
   it("keeps headline within Google's 110 character limit", () => {
     const ld = articleJsonLd({ ...base, title: "x".repeat(200) }) as unknown as LD;
     expect(ld.headline.length).toBeLessThanOrEqual(110);

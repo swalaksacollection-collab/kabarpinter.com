@@ -203,11 +203,22 @@ from other outlets, raise the same concern again before doing it.
 - **Custom SMTP** (Resend/Brevo/...): required before any contributor other
   than the owner can receive a login link. Then switch the email templates to
   `/auth/confirm` (see Infrastructure).
-- **Tribunnews images stay blurry** (~20% of images, the largest source): RSS
-  only exposes a signed 148x99 q30 thumbnail and any URL change -> HTTP 400.
-  Options: fetch `og:image` (1200x675) from the article page at ingestion
-  (filter out logo placeholders; some are q30 too), or show Tribun cards
-  without a photo. Liputan6/kly URLs are signed as well (673x379, left as is).
+- **Tribunnews: photos are hidden, and the text is an open legal question.**
+  Tribunnews' terms of use (read 2026-10-01; not legal advice) say its content
+  incl. photos is for personal, non-commercial use only, forbid robots/scripts
+  that extract content, and forbid embedding its content on other sites without
+  written permission. Kabarpinter is commercial, so (a) we do NOT scrape
+  article pages for a larger `og:image` (the obvious fix for the 148x99 q30 RSS
+  thumbnail), and (b) `lib/images.ts` `isImageAllowed()` blocks every
+  `*.tribunnews.com` photo everywhere (cards, hero, article page, og:image,
+  JSON-LD) - those cards are text-only with the source credit + link. The same
+  terms arguably also cover aggregating Tribun titles/excerpts via RSS; that is
+  still enabled and is the owner's call: get written permission from Tribunnews
+  (then delete the entry in `BLOCKED_IMAGE_HOSTS` to show photos again) or
+  disable the `Tribunnews` row in `sources`. Only Tribunnews' terms were read;
+  ANTARA/Liputan6/detik/CNN terms have NOT been reviewed (their robots.txt has
+  no usage notice, which proves nothing about their terms).
+  Liputan6/kly photos are signed at 673x379 (cannot be enlarged) but are shown.
 - **Editor tools (Phase B)**: an editor sees only the first 400 chars of a
   submission; cannot edit before publishing, unpublish a live article, or
   hide/delete a bad RSS article; RSS sources and users can only be managed via
@@ -237,6 +248,11 @@ from other outlets, raise the same concern again before doing it.
   layout CSS (cards are 112px thumbnails on phones, 2-3 columns above).
   Verify in a browser by reading `img.currentSrc` - *not* `naturalWidth`
   (browsers rescale it for `w`-descriptor srcsets).
+- **Every image must also pass `isImageAllowed()`** (`lib/images.ts`): it is the
+  one gate for hosts whose terms forbid embedding (currently Tribunnews). Any
+  new place that renders `image_url`, og:image or JSON-LD images must call it.
+  Never add a scraper for source article pages (robots/terms + the owner's
+  stance on copyright).
 - **Homepage lead story** is chosen by `lib/lead.ts` `pickLead()`: among the
   newest 6 hero-eligible articles, the first whose photo can be served >=1000px
   (`maxImageWidth()` in `lib/images.ts`); otherwise the sharpest available.

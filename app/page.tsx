@@ -5,7 +5,7 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { LiveWidget } from "@/components/LiveWidget";
 import { PokokBerita } from "@/components/PokokBerita";
 import { categoryLabel } from "@/lib/categories";
-import { upgradeImageUrl, imageSrcSet, IMAGE_SIZES } from "@/lib/images";
+import { upgradeImageUrl, imageSrcSet, isImageAllowed, IMAGE_SIZES } from "@/lib/images";
 import { pickLead } from "@/lib/lead";
 import type { Article } from "@/lib/types";
 
@@ -39,7 +39,7 @@ function LeadStory({ article }: { article: Article }) {
   return (
     <article className="story story--lead">
       <Link href={`/artikel/${article.slug}`}>
-        {article.image_url ? (
+        {article.image_url && isImageAllowed(article.image_url) ? (
           <div className="story__media">
             <div className="story__badges">
               <StoryBadges article={article} />
