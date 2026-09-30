@@ -2,43 +2,41 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { REGIONS } from "@/lib/regions";
 
 type NavItem = { href: string; label: string };
 
-// Always visible on desktop - the most-read sections. Kept short on
-// purpose so the whole bar fits a 1366px laptop without horizontal
-// scrolling (items past the right edge were effectively invisible).
-const PRIMARY: NavItem[] = [
+// Row 1 (blue bar): cross-cutting destinations.
+const MAIN: NavItem[] = [
   { href: "/", label: "Beranda" },
   { href: "/daily-brief", label: "📋 Daily Brief" },
-  { href: "/kategori/news", label: "PinterNews" },
-  { href: "/kategori/finance", label: "PinterFinance" },
-  { href: "/kategori/hot", label: "PinterHot" },
-  { href: "/kategori/sport", label: "PinterSport" },
-];
-// Tucked into the "Lainnya ▾" dropdown on desktop.
-const MORE: NavItem[] = [
-  { href: "/kategori/inet", label: "PinterInet" },
-  { href: "/kategori/oto", label: "PinterOto" },
-  { href: "/kategori/travel", label: "PinterTravel" },
-  { href: "/kategori/food", label: "PinterFood" },
-  { href: "/kategori/health", label: "PinterHealth" },
-  { href: "/kategori/wolipop", label: "PinterStyle" },
-  { href: "/kategori/20detik", label: "PinterClip" },
+  { href: "/opini", label: "✍️ Opini" },
 ];
 const DAERAH_HREF = "/daerah";
-const MORE_KEY = "__more";
 
-// Which nav slot corresponds to the current route - drives the
-// "is-active" text style and where the sliding yellow indicator goes.
-// "/daerah/*" -> Daerah; any MORE category -> the "Lainnya" trigger.
-function matchNavHref(pathname: string): string | null {
+// Row 2 (light bar): every topical category, each underlined in its own
+// accent colour (--c-<slug>, same as the category badges). Two rows keep
+// all sections visible at once instead of hiding half behind a dropdown.
+const CATEGORIES: { slug: string; label: string }[] = [
+  { slug: "news", label: "PinterNews" },
+  { slug: "finance", label: "PinterFinance" },
+  { slug: "hot", label: "PinterHot" },
+  { slug: "inet", label: "PinterInet" },
+  { slug: "sport", label: "PinterSport" },
+  { slug: "oto", label: "PinterOto" },
+  { slug: "travel", label: "PinterTravel" },
+  { slug: "food", label: "PinterFood" },
+  { slug: "health", label: "PinterHealth" },
+  { slug: "wolipop", label: "PinterStyle" },
+  { slug: "20detik", label: "PinterClip" },
+];
+
+// Which row-1 item (if any) corresponds to the current route - drives the
+// sliding yellow indicator. "/daerah/*" resolves to Daerah.
+function matchMainHref(pathname: string): string | null {
   if (pathname === DAERAH_HREF || pathname.startsWith(`${DAERAH_HREF}/`)) return DAERAH_HREF;
-  if (PRIMARY.some((i) => i.href === pathname)) return pathname;
-  if (MORE.some((i) => i.href === pathname)) return MORE_KEY;
-  return null;
+  return MAIN.some((i) => i.href === pathname) ? pathname : null;
 }
 
 type IndicatorRect = { left: number; top: number; width: number; height: number };
@@ -46,28 +44,15 @@ type IndicatorRect = { left: number; top: number; width: number; height: number 
 export function NavBar() {
   const pathname = usePathname();
   const listRef = useRef<HTMLUListElement>(null);
+  const catsRef = useRef<HTMLUListElement>(null);
   const [indicator, setIndicator] = useState<IndicatorRect | null>(null);
-  // Remember which path the mobile panel was opened on, so it closes
-  // automatically after navigating (no setState-in-effect needed).
-  const [openOnPath, setOpenOnPath] = useState<string | null>(null);
-  const mobileOpen = openOnPath === pathname;
-  const activeHref = matchNavHref(pathname);
-  const activeMoreLabel = MORE.find((i) => i.href === pathname)?.label;
+  const activeHref = matchMainHref(pathname);
 
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenOnPath(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [mobileOpen]);
-
+  // Yellow pill on row 1.
   useEffect(() => {
     function measure() {
       const ul = listRef.current;
-      // offsetParent is null while the desktop bar is display:none (mobile).
-      if (!ul || !activeHref || ul.offsetParent === null) {
+      if (!ul || !activeHref) {
         setIndicator(null);
         return;
       }
@@ -76,8 +61,8 @@ export function NavBar() {
         setIndicator(null);
         return;
       }
-      // getBoundingClientRect rather than offsetLeft: dropdown <li>s are
-      // position: relative, which would make offsetLeft relative to them.
+      // getBoundingClientRect rather than offsetLeft: the Daerah <li> is
+      // position: relative, which would make offsetLeft relative to it.
       const ulRect = ul.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
       setIndicator({
@@ -94,104 +79,72 @@ export function NavBar() {
     return () => window.removeEventListener("resize", measure);
   }, [activeHref]);
 
+  // On phones row 2 scrolls sideways - make sure the active category is
+  // actually in view rather than hidden past the right edge.
+  useEffect(() => {
+    const active = catsRef.current?.querySelector<HTMLElement>(".nav-cat.is-active");
+    active?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [pathname]);
+
   const linkClass = (key: string) => `nav-link${key === activeHref ? " is-active" : ""}`;
-  const activeIf = (href: string) => (href === pathname ? "is-active" : undefined);
 
   return (
     <nav className="masthead__nav" aria-label="Menu utama">
-      {/* ---------- desktop bar ---------- */}
-      <ul ref={listRef} className="nav-desktop">
-        {indicator && (
-          <span
-            className="nav-indicator"
-            aria-hidden="true"
-            style={{
-              transform: `translate(${indicator.left}px, ${indicator.top}px)`,
-              width: indicator.width,
-              height: indicator.height,
-            }}
-          />
-        )}
-        {PRIMARY.map((item) => (
-          <li key={item.href}>
-            <Link href={item.href} data-href={item.href} className={linkClass(item.href)}>
-              {item.label}
-            </Link>
-          </li>
-        ))}
-        <li className="nav-dropdown">
-          <Link href={DAERAH_HREF} data-href={DAERAH_HREF} className={linkClass(DAERAH_HREF)}>
-            Daerah ▾
-          </Link>
-          <div className="nav-dropdown__menu">
-            {REGIONS.map((r) => (
-              <Link key={r.slug} href={`/daerah/${r.slug}`}>
-                {r.label}
-              </Link>
-            ))}
-          </div>
-        </li>
-        <li className="nav-dropdown">
-          <button type="button" data-href={MORE_KEY} className={linkClass(MORE_KEY)} aria-haspopup="true">
-            {activeMoreLabel ?? "Lainnya"} ▾
-          </button>
-          <div className="nav-dropdown__menu nav-dropdown__menu--right">
-            {MORE.map((item) => (
-              <Link key={item.href} href={item.href} aria-current={item.href === pathname ? "page" : undefined}>
+      <div className="nav-main">
+        <ul ref={listRef}>
+          {indicator && (
+            <span
+              className="nav-indicator"
+              aria-hidden="true"
+              style={{
+                transform: `translate(${indicator.left}px, ${indicator.top}px)`,
+                width: indicator.width,
+                height: indicator.height,
+              }}
+            />
+          )}
+          {MAIN.map((item) => (
+            <li key={item.href}>
+              <Link href={item.href} data-href={item.href} className={linkClass(item.href)}>
                 {item.label}
               </Link>
-            ))}
-          </div>
-        </li>
-      </ul>
-
-      {/* ---------- mobile bar + panel ---------- */}
-      <div className="nav-mobile">
-        <button
-          type="button"
-          className="nav-mobile__toggle"
-          aria-expanded={mobileOpen}
-          aria-controls="nav-mobile-panel"
-          onClick={() => setOpenOnPath(mobileOpen ? null : pathname)}
-        >
-          <span aria-hidden="true">{mobileOpen ? "✕" : "☰"}</span> Menu
-        </button>
-        <div className="nav-mobile__quick">
-          <Link href="/" className={activeIf("/")}>
-            Beranda
-          </Link>
-          <Link href="/daily-brief" className={activeIf("/daily-brief")}>
-            Daily Brief
-          </Link>
-        </div>
-      </div>
-      {mobileOpen && (
-        <div id="nav-mobile-panel" className="nav-mobile__panel">
-          <div className="nav-mobile__group">
-            <p className="nav-mobile__heading">Kategori</p>
-            <div className="nav-mobile__grid">
-              {[...PRIMARY.slice(2), ...MORE].map((item) => (
-                <Link key={item.href} href={item.href} className={activeIf(item.href)}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="nav-mobile__group">
-            <p className="nav-mobile__heading">Daerah</p>
-            <div className="nav-mobile__grid">
-              <Link href={DAERAH_HREF} className={activeIf(DAERAH_HREF)}>
-                Semua Daerah
-              </Link>
+            </li>
+          ))}
+          <li className="nav-dropdown">
+            <Link href={DAERAH_HREF} data-href={DAERAH_HREF} className={linkClass(DAERAH_HREF)}>
+              Daerah ▾
+            </Link>
+            <div className="nav-dropdown__menu">
               {REGIONS.map((r) => (
-                <Link key={r.slug} href={`/daerah/${r.slug}`} className={activeIf(`/daerah/${r.slug}`)}>
+                <Link key={r.slug} href={`/daerah/${r.slug}`}>
                   {r.label}
                 </Link>
               ))}
             </div>
-          </div>
-        </div>
-      )}
+          </li>
+        </ul>
+      </div>
+
+      <div className="nav-cats">
+        <ul ref={catsRef} aria-label="Kategori">
+          {CATEGORIES.map((c) => {
+            const href = `/kategori/${c.slug}`;
+            const active = pathname === href;
+            return (
+              <li key={c.slug}>
+                <Link
+                  href={href}
+                  className={`nav-cat${active ? " is-active" : ""}`}
+                  aria-current={active ? "page" : undefined}
+                  style={{ "--cat": `var(--c-${c.slug})` } as CSSProperties}
+                >
+                  {c.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }
