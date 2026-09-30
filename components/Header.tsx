@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getPublishedArticles } from "@/lib/articles";
+import { getTopArticles } from "@/lib/articles";
+import type { Article } from "@/lib/types";
 
 const NAV = [
   { href: "/", label: "Beranda" },
@@ -34,9 +35,20 @@ function formatDate(d: Date) {
   };
 }
 
+function tickerSpans(articles: Article[], keyPrefix: string) {
+  return articles.map((a) => (
+    <span key={`${keyPrefix}-${a.id}`}>
+      <span className="ticker__item">{a.title}</span>
+      <span className="ticker__sep">◆</span>
+    </span>
+  ));
+}
+
 export async function Header() {
   const { day, full } = formatDate(new Date());
-  const tickerArticles = await getPublishedArticles(8).catch(() => []);
+  // "Today's most important stories" for the breaking-news ticker: ranked
+  // by viral score (not just latest), within the last 48h.
+  const tickerArticles = await getTopArticles(8).catch(() => []);
 
   return (
     <header className="masthead">
@@ -47,12 +59,14 @@ export async function Header() {
             <span>BREAKING</span>
           </div>
           <div className="ticker__track">
-            {tickerArticles.map((a, i) => (
-              <span key={a.id}>
-                <span className="ticker__item">{a.title}</span>
-                {i < tickerArticles.length - 1 && <span className="ticker__sep">◆</span>}
-              </span>
-            ))}
+            {/* Content is duplicated so the marquee loops seamlessly: as
+                the first copy scrolls fully off-screen to the left, the
+                second copy arrives right behind it with no visible gap
+                or jump-cut. */}
+            <div className="ticker__marquee">
+              {tickerSpans(tickerArticles, "a")}
+              {tickerSpans(tickerArticles, "b")}
+            </div>
           </div>
         </div>
       )}

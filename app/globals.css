@@ -125,10 +125,22 @@ h1, h2, h3, h4 {
   flex: 1;
   overflow: hidden;
   white-space: nowrap;
+}
+.ticker__marquee {
+  display: inline-block;
   padding-left: 24px;
+  animation: ticker-scroll 35s linear infinite;
+}
+.ticker:hover .ticker__marquee { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 .ticker__item { font-weight: 500; margin-right: 28px; }
 .ticker__sep { color: var(--red); margin-right: 28px; }
+@media (prefers-reduced-motion: reduce) {
+  .ticker__marquee { animation: none; }
+}
 
 /* ============================================
    MASTHEAD

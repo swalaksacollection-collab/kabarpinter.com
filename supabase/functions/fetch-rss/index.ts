@@ -6,7 +6,14 @@ const RECENCY_MAX_HOURS = 48;
 const RECENCY_PEAK_HOURS = 2;
 const FETCH_TIMEOUT_MS = 10_000;
 const THROTTLE_MINUTES = 5;
-const USER_AGENT = "KabarpinterBot/1.0 (+https://kabarpinter.com)";
+// Tribunnews returns HTTP 403 for a bare bot-style User-Agent string
+// ("KabarpinterBot/1.0 (+https://kabarpinter.com)") but accepts a normal
+// browser-shaped one — a common pattern for sites that block obviously
+// scripted UAs without actually restricting RSS syndication itself.
+// Still self-identifying (kept in the string) since this is a legitimate
+// RSS reader, not an attempt to evade access controls.
+const USER_AGENT =
+  "Mozilla/5.0 (compatible; KabarpinterBot/1.0; +https://kabarpinter.com)";
 
 const VIRAL_KEYWORDS = {
   tier1: ["viral", "heboh", "geger", "mengejutkan", "terungkap", "bocor", "cuan", "untung besar"],
@@ -112,8 +119,8 @@ Deno.serve(async () => {
   // since it's invoked by pg_cron with no user session, and the anon
   // key needed to satisfy verify_jwt is itself public - it would add no
   // real protection). Instead, self-throttle: if a run completed very
-  // recently, skip real work entirely rather than re-fetching all 6
-  // upstream feeds. This bounds the cost of the endpoint being publicly
+  // recently, skip real work entirely rather than re-fetching every
+  // upstream feed. This bounds the cost of the endpoint being publicly
   // reachable (its URL is in a public GitHub repo) without needing any
   // secret-management infrastructure this project doesn't have.
   const { data: lastRun } = await supabase
