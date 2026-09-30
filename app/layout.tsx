@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Manrope, JetBrains_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/Header";
@@ -13,25 +13,15 @@ import {
   DEFAULT_OG_IMAGE,
 } from "@/lib/site";
 
-// Matches the live kabarpinter.com design system: Fraunces for
-// headlines/logo, Manrope for body text, JetBrains Mono for dates/meta/tags.
-const fraunces = Fraunces({
-  variable: "--font-display",
+// Typography mirrors detik.com: Montserrat for headlines/titles (their
+// self-hosted "Montserrat-FF"), Helvetica for body/nav/meta (their
+// "Helvetica-FF"). Helvetica is a licensed font we don't ship - the
+// --font-body stack in globals.css uses the visitor's installed
+// Helvetica, falling back to Arial exactly like detik.com does.
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["600", "700", "900"],
-  style: ["normal", "italic"],
-});
-
-const manrope = Manrope({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 // NOTE: no site-wide `alternates.canonical` here on purpose - a canonical set
@@ -85,7 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
+      className={montserrat.variable}
       suppressHydrationWarning
     >
       <head>

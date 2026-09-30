@@ -146,10 +146,17 @@ would have it set and show that person's own byline instead.
 
 ## Design system
 
-- Fonts: Fraunces (`--font-display`, logo + some headlines), Manrope
-  (`--font-body`, body text + article headline per an explicit
-  "match ANTARA's sans-serif look" request), JetBrains Mono
-  (`--font-mono`, dates/meta/tags).
+- Fonts: same families as detik.com (explicit request). Montserrat
+  (`--font-display`, via next/font; logo, headings, article headline at
+  600) and Helvetica (`--font-body`, system stack "Helvetica Neue",
+  Helvetica, Arial, Tahoma - Helvetica is licensed so it isn't shipped;
+  Windows/Android visitors get Arial, same as detik's own fallback).
+  `--font-mono` now aliases the body stack (detik uses Helvetica for
+  dates/meta too).
+- Light/dark theme: `html[data-theme]`, set pre-paint by the inline
+  script in `app/layout.tsx` (localStorage `kp-theme`, else OS setting);
+  toggle is `components/ThemeToggle.tsx`. Dark tokens live in
+  `app/globals.css` right after `:root`.
 - Palette: ink/paper/red/yellow custom properties in `app/globals.css`
   `:root`. Logo is **not italic** (was, then explicitly de-italicized).
 - Headline scale was intentionally toned down from an earlier
