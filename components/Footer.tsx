@@ -16,11 +16,11 @@ export function Footer() {
           <div>
             <h4>Kategori</h4>
             <ul>
-              <li><a href="/kategori/tren-viral">Tren Viral</a></li>
-              <li><a href="/kategori/karir-skill">Karir &amp; Skill</a></li>
-              <li><a href="/kategori/peluang-bisnis">Peluang Bisnis</a></li>
-              <li><a href="/kategori/umkm-inspirasi">UMKM</a></li>
-              <li><a href="/kategori/ekonomi-uang">Ekonomi</a></li>
+              <li><a href="/kategori/news">detikNews</a></li>
+              <li><a href="/kategori/finance">detikFinance</a></li>
+              <li><a href="/kategori/hot">detikHot</a></li>
+              <li><a href="/kategori/sport">detikSport</a></li>
+              <li><a href="/kategori/wolipop">Wolipop</a></li>
             </ul>
           </div>
           <div>

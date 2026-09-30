@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getPublishedArticles } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
+import { SponsorBanner } from "@/components/SponsorBanner";
+import { LiveWidget } from "@/components/LiveWidget";
+import { categoryLabel } from "@/lib/categories";
 import type { Article } from "@/lib/types";
 
 export const revalidate = 60;
@@ -21,7 +24,7 @@ function LeadStory({ article }: { article: Article }) {
           <div className="story__media">
             {article.category_slug && (
               <span className={`story__badge story__badge--${article.category_slug}`}>
-                {article.category_slug.replace(/-/g, " ")}
+                {categoryLabel(article.category_slug)}
               </span>
             )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -47,7 +50,7 @@ function SideStory({ article }: { article: Article }) {
       <Link href={`/artikel/${article.slug}`}>
         {article.category_slug && (
           <span className={`story__badge story__badge--${article.category_slug}`}>
-            {article.category_slug.replace(/-/g, " ")}
+            {categoryLabel(article.category_slug)}
           </span>
         )}
         <h2 className="story__headline">{article.title}</h2>
@@ -80,6 +83,10 @@ export default async function HomePage() {
 
   return (
     <main>
+      <div className="container">
+        <SponsorBanner />
+      </div>
+
       <section className="hero">
         <div className="container">
           <div className="hero__grid">
@@ -92,6 +99,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <LiveWidget />
 
       {gridArticles.length > 0 && (
         <section className="section section--alt">

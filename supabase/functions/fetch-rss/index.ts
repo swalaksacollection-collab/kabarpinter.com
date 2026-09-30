@@ -14,15 +14,23 @@ const VIRAL_KEYWORDS = {
   tier3: ["pertama", "baru", "terbaru", "eksklusif", "curhat", "cerita", "penting", "wajib"],
 };
 
+// Matches detik.com's own vertical structure - kept in sync with
+// lib/scoring.ts's THEME_KEYWORDS (see migration 0006 for the
+// corresponding categories table remap). Deliberately duplicated rather
+// than shared across the Node/Deno boundary - see Task 17's ledger entry
+// in the original plan for why.
 const THEME_KEYWORDS: Record<string, string[]> = {
-  "tren-viral": ["viral", "tren", "fyp", "tiktok", "mendunia", "fenomena", "heboh", "ramai", "gen z", "milenial", "lifestyle"],
-  "peluang-bisnis": ["peluang", "bisnis", "usaha", "cuan", "untung", "modal kecil", "omset", "omzet", "jualan", "reseller", "dropship", "side hustle", "wirausaha"],
-  "karir-skill": ["lowongan", "kerja", "karir", "gaji", "skill", "sertifikasi", "pelatihan", "fresh graduate", "wfh", "remote", "freelance", "lpdp", "beasiswa", "magang", "cpns", "pppk", "bumn"],
-  "konsumen-data": ["konsumen", "belanja", "shopee", "tokopedia", "tiktok shop", "live shopping", "preferensi", "data", "survei", "riset", "gaya hidup", "kebiasaan"],
-  "ekspor-impor": ["ekspor", "impor", "china", "temu", "tiongkok", "umkm go global", "bea cukai", "tarif", "kuota", "produk lokal", "sourcing", "supplier"],
-  "umkm-inspirasi": ["umkm", "umkm sukses", "pengusaha muda", "startup", "founder", "mahasiswa bisnis", "modal nekat", "bangkrut", "gagal", "comeback", "sukses", "inspiratif"],
-  "ekonomi-uang": ["rupiah", "dolar", "saham", "ihsg", "bitcoin", "kripto", "inflasi", "bbm", "subsidi", "pajak", "investasi", "reksadana", "emas", "bank indonesia"],
-  politik: ["prabowo", "jokowi", "gibran", "pdip", "gerindra", "dpr", "menteri", "pilkada", "demo", "kpk", "korupsi"],
+  news: ["politik", "pemerintah", "dpr", "menteri", "presiden", "hukum", "kriminal", "bencana", "kebakaran", "korupsi", "prabowo", "jokowi", "gibran", "pilkada", "kpk", "demo"],
+  finance: ["ekonomi", "bisnis", "usaha", "saham", "rupiah", "ihsg", "investasi", "pajak", "bank", "keuangan", "harga", "dolar", "bitcoin", "kripto", "inflasi", "bbm", "subsidi", "umkm", "startup", "peluang", "cuan", "untung"],
+  hot: ["artis", "selebriti", "gosip", "skandal", "seleb", "film", "konser", "musisi", "aktor", "aktris", "viral", "tren", "fyp", "heboh", "ramai"],
+  inet: ["teknologi", "gadget", "aplikasi", "internet", "smartphone", "handphone", "komputer", "software", "kecerdasan buatan"],
+  sport: ["sepak bola", "pertandingan", "atlet", "liga", "timnas", "olahraga", "juara", "medali", "turnamen", "bola"],
+  oto: ["mobil", "motor", "otomotif", "kendaraan", "sim", "test drive", "pabrikan"],
+  travel: ["wisata", "liburan", "destinasi", "hotel", "tiket pesawat", "pantai", "gunung", "traveling", "turis"],
+  food: ["kuliner", "makanan", "resep", "restoran", "masakan", "jajanan", "minuman", "chef"],
+  health: ["kesehatan", "penyakit", "dokter", "rumah sakit", "vaksin", "obat", "gizi", "virus"],
+  wolipop: ["fashion", "kecantikan", "wanita", "gaya hidup", "kosmetik", "skincare", "parenting", "kehamilan"],
+  "20detik": ["video", "tayangan video", "siaran langsung", "live streaming"],
 };
 
 function matchTheme(text: string): string | null {

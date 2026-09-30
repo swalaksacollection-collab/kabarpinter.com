@@ -4,12 +4,22 @@ import { getPublishedArticles } from "@/lib/articles";
 const NAV = [
   { href: "/", label: "Beranda" },
   { href: "/daily-brief", label: "📋 Daily Brief", accent: true },
-  { href: "/kategori/tren-viral", label: "Tren Viral" },
-  { href: "/kategori/karir-skill", label: "Karir & Skill" },
-  { href: "/kategori/peluang-bisnis", label: "Peluang Bisnis" },
-  { href: "/kategori/umkm-inspirasi", label: "UMKM" },
-  { href: "/kategori/ekonomi-uang", label: "Ekonomi" },
+  { href: "/kategori/news", label: "detikNews" },
+  { href: "/kategori/finance", label: "detikFinance" },
+  { href: "/kategori/hot", label: "detikHot" },
+  { href: "/kategori/inet", label: "detikInet" },
+  { href: "/kategori/sport", label: "detikSport" },
+  { href: "/kategori/oto", label: "detikOto" },
+  { href: "/kategori/travel", label: "detikTravel" },
+  { href: "/kategori/food", label: "detikFood" },
+  { href: "/kategori/health", label: "detikHealth" },
+  { href: "/kategori/wolipop", label: "Wolipop" },
+  { href: "/kategori/20detik", label: "20detik" },
 ];
+
+// Decorative only, matching detik.com's "Daerah" nav item — this project
+// has no real per-region content or filtering behind it.
+const DAERAH = ["Jabar", "Jateng", "Jatim", "Sumut", "Sulsel", "Bali"];
 
 const DAYS = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
 const MONTHS = [
@@ -65,7 +75,12 @@ export async function Header() {
               <path d="m21 21-4.3-4.3" />
             </svg>
           </Link>
-          <button className="btn-primary">Berlangganan Gratis</button>
+          <Link href="/kontributor/masuk" className="icon-btn" style={{ width: "auto", borderRadius: "999px", padding: "0 16px", fontSize: "13px", fontWeight: 600 }}>
+            Daftar
+          </Link>
+          <Link href="/kontributor/masuk" className="btn-primary">
+            Masuk
+          </Link>
         </div>
       </div>
 
@@ -81,6 +96,14 @@ export async function Header() {
               </Link>
             </li>
           ))}
+          <li className="nav-dropdown">
+            <span className="nav-link" style={{ cursor: "default" }}>Daerah ▾</span>
+            <div className="nav-dropdown__menu">
+              {DAERAH.map((d) => (
+                <Link key={d} href="/">{d}</Link>
+              ))}
+            </div>
+          </li>
         </ul>
       </nav>
     </header>

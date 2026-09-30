@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Article } from "@/lib/types";
+import { categoryLabel } from "@/lib/categories";
 
 export function ArticleCard({ article }: { article: Article }) {
   return (
@@ -13,7 +14,7 @@ export function ArticleCard({ article }: { article: Article }) {
         )}
         {article.category_slug && (
           <span className={`story__badge story__badge--${article.category_slug}`}>
-            {article.category_slug.replace(/-/g, " ")}
+            {categoryLabel(article.category_slug)}
           </span>
         )}
         <h3 className="story__headline">{article.title}</h3>

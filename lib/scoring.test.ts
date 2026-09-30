@@ -44,15 +44,19 @@ describe("scoreArticle", () => {
 });
 
 describe("matchTheme", () => {
-  it("matches 'peluang bisnis' keywords over other themes", () => {
-    expect(matchTheme("Peluang Usaha Modal Kecil untuk Reseller")).toBe("peluang-bisnis");
+  it("matches 'finance' keywords", () => {
+    expect(matchTheme("Rupiah Melemah, IHSG Ikut Anjlok Sore Ini")).toBe("finance");
   });
 
-  it("matches 'karir & skill' keywords", () => {
-    expect(matchTheme("Lowongan Kerja Fresh Graduate, Ini Syaratnya")).toBe("karir-skill");
+  it("matches 'sport' keywords", () => {
+    expect(matchTheme("Timnas Menang di Liga, Suporter Rayakan Kemenangan")).toBe("sport");
+  });
+
+  it("matches 'food' keywords", () => {
+    expect(matchTheme("Resep Kuliner Nusantara yang Wajib Dicoba")).toBe("food");
   });
 
   it("returns null when nothing matches", () => {
-    expect(matchTheme("Resep Masakan Rumahan Sehari-hari")).toBeNull();
+    expect(matchTheme("Info Ringkas Mengenai Cuaca Hari Ini")).toBeNull();
   });
 });
