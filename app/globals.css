@@ -326,7 +326,6 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   gap: 4px;
-  overflow-x: auto;
   list-style: none;
 }
 /* The sliding yellow "active page" indicator (see components/NavBar.tsx):
@@ -386,6 +385,76 @@ h1, h2, h3, h4 {
   border-radius: 3px;
 }
 .nav-dropdown__menu a:hover { background: var(--paper-warm); color: var(--red); }
+.nav-dropdown__menu a[aria-current="page"] { background: var(--paper-warm); color: var(--ink); font-weight: 700; }
+.nav-dropdown__menu--right { left: auto; right: 0; }
+button.nav-link { background: none; border: 0; font-family: inherit; cursor: pointer; }
+
+/* Mobile nav: the full desktop bar doesn't fit a phone, so below 900px it
+   collapses into a "Menu" button (+ two quick links) that opens a
+   grouped panel of every category and region. */
+.nav-mobile { display: none; }
+@media (max-width: 899px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 6px 16px;
+  }
+  .nav-mobile__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--yellow);
+    color: var(--on-yellow);
+    border: 0;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .nav-mobile__quick { display: flex; gap: 2px; }
+  .nav-mobile__quick a {
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .nav-mobile__quick a.is-active { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+  .nav-mobile__panel {
+    background: var(--paper);
+    border-bottom: 1px solid var(--paper-line);
+    box-shadow: 0 12px 24px var(--shadow-color);
+    padding: 8px 16px 16px;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  .nav-mobile__group + .nav-mobile__group { margin-top: 12px; }
+  .nav-mobile__heading {
+    margin: 8px 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .nav-mobile__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .nav-mobile__grid a {
+    padding: 10px 12px;
+    border-radius: 4px;
+    background: var(--paper-warm);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .nav-mobile__grid a.is-active { background: var(--yellow); color: var(--on-yellow); }
+}
 
 /* ============================================
    SPONSOR BANNER (placeholder ad slot)
