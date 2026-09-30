@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getArticlesByRegion } from "@/lib/articles";
@@ -9,6 +10,23 @@ export const revalidate = 300;
 // Pre-render every known region (same approach as /kategori/[slug]).
 export function generateStaticParams() {
   return REGIONS.map((r) => ({ slug: r.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  if (!isKnownRegion(slug)) return { title: "Daerah tidak ditemukan" };
+  const title = `Berita Daerah ${regionLabel(slug)}`;
+  const description = `Kabar terbaru dari ${regionLabel(slug)} — berita daerah yang dikurasi Kabarpinter.com.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/daerah/${slug}` },
+    openGraph: { title, description, url: `/daerah/${slug}` },
+  };
 }
 
 export default async function RegionPage({

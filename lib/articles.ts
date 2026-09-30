@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "./supabase/server";
 import { createPublicClient } from "./supabase/public";
 import type { Article } from "./types";
@@ -117,7 +118,9 @@ export async function getOpinionArticles(limit = 30): Promise<Article[]> {
 }
 
 // Full row (incl. `body`) - the only public query that needs it.
-export async function getArticleBySlug(slug: string): Promise<Article | null> {
+// Wrapped in React's cache() so generateMetadata() and the page component
+// share ONE query per request instead of hitting the database twice.
+export const getArticleBySlug = cache(async (slug: string): Promise<Article | null> => {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("articles")
@@ -127,6 +130,25 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
     .maybeSingle();
   if (error) throw error;
   return data as unknown as Article | null;
+});
+
+// Minimal rows for sitemap.xml (slug + dates only, most recent first).
+export type SitemapArticle = {
+  slug: string;
+  published_at: string | null;
+  updated_at: string | null;
+};
+
+export async function getSitemapArticles(limit = 2000): Promise<SitemapArticle[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("articles")
+    .select("slug, published_at, updated_at")
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data as SitemapArticle[]) ?? [];
 }
 
 // ---------------------------------------------------------------------

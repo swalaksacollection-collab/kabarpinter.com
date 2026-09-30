@@ -31,6 +31,7 @@ export function Footer() {
               <li><a href="/redaksi">Tim Redaksi</a></li>
               <li><a href="/pedoman">Pedoman Media Siber</a></li>
               <li><a href="/etika">Kode Etik</a></li>
+              <li><a href="/privasi">Kebijakan Privasi</a></li>
               <li><a href="/kontak">Kontak</a></li>
               <li><a href="/kontributor/masuk">Jadi Kontributor/Pakar</a></li>
             </ul>

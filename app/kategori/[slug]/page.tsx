@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getArticlesByCategory } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
@@ -13,7 +15,8 @@ export async function generateStaticParams() {
   return (data ?? []).map((c) => ({ slug: c.slug as string }));
 }
 
-async function getCategory(slug: string) {
+// cache(): generateMetadata() and the page share one query per request.
+const getCategory = cache(async (slug: string) => {
   const supabase = createPublicClient();
   const { data } = await supabase
     .from("categories")
@@ -21,6 +24,23 @@ async function getCategory(slug: string) {
     .eq("slug", slug)
     .maybeSingle();
   return data;
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const category = await getCategory(slug);
+  if (!category) return { title: "Kategori tidak ditemukan" };
+  const description = `Berita terbaru ${category.label} di Kabarpinter.com — dikurasi dari sumber tepercaya dan diperbarui berkala.`;
+  return {
+    title: category.label,
+    description,
+    alternates: { canonical: `/kategori/${slug}` },
+    openGraph: { title: category.label, description, url: `/kategori/${slug}` },
+  };
 }
 
 export default async function CategoryPage({

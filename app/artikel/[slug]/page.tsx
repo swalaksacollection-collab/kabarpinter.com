@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticlesByCategory } from "@/lib/articles";
@@ -5,8 +6,52 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { categoryLabel } from "@/lib/categories";
 import { fullDateTime } from "@/lib/date";
 import { ShareButtons } from "@/components/ShareButtons";
+import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
+import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 60;
+
+// Drives <title>, meta description, canonical and the Open Graph / Twitter
+// tags that WhatsApp, Facebook and X read to build the link preview card.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticleBySlug(slug);
+  if (!article) return { title: "Artikel tidak ditemukan" };
+
+  const description = describeText(article.excerpt) || describeText(article.body);
+  const path = `/artikel/${article.slug}`;
+  const images = article.image_url
+    ? [{ url: article.image_url, alt: article.title }]
+    : [DEFAULT_OG_IMAGE];
+
+  return {
+    title: article.title,
+    description: description || undefined,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      url: path,
+      siteName: SITE_NAME,
+      locale: "id_ID",
+      title: article.title,
+      description: description || undefined,
+      publishedTime: article.published_at ?? undefined,
+      modifiedTime: article.updated_at ?? undefined,
+      authors: [article.author?.display_name ?? article.source_name ?? SITE_NAME],
+      images,
+    },
+    twitter: {
+      card: article.image_url ? "summary_large_image" : "summary",
+      title: article.title,
+      description: description || undefined,
+      images: images.map((i) => i.url),
+    },
+  };
+}
 
 export default async function ArticlePage({
   params,
@@ -25,6 +70,10 @@ export default async function ArticlePage({
 
   return (
     <main className="section">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleJsonLd(article)) }}
+      />
       <div className="container">
         <article className="article">
           <nav className="article__breadcrumb" aria-label="Breadcrumb">
@@ -71,7 +120,7 @@ export default async function ArticlePage({
           {article.image_url && (
             <figure className="article__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={article.image_url} alt="" />
+              <img src={article.image_url} alt={article.title} />
               {(article.source_name || article.author?.display_name) && (
                 <figcaption>
                   Foto: {article.source_name ?? article.author?.display_name}
