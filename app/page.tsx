@@ -6,6 +6,7 @@ import { LiveWidget } from "@/components/LiveWidget";
 import { PokokBerita } from "@/components/PokokBerita";
 import { categoryLabel } from "@/lib/categories";
 import { upgradeImageUrl, imageSrcSet, IMAGE_SIZES } from "@/lib/images";
+import { pickLead } from "@/lib/lead";
 import type { Article } from "@/lib/types";
 
 export const revalidate = 300;
@@ -111,7 +112,10 @@ export default async function HomePage() {
   // the homepage's main hero just for being the most recently published
   // row. They still appear further down in the regular grid.
   const heroEligible = articles.filter((a) => a.source_type !== "contributor");
-  const [lead, ...restHero] = heroEligible;
+  // Lead = newest story whose photo can be shown sharply (see lib/lead.ts);
+  // the side stories stay the newest of the rest.
+  const lead = pickLead(heroEligible);
+  const restHero = heroEligible.filter((a) => a.id !== lead?.id);
   const side = restHero.slice(0, 3);
   const heroIds = new Set([lead?.id, ...side.map((a) => a.id)]);
   const gridArticles = articles.filter((a) => !heroIds.has(a.id));

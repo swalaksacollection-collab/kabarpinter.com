@@ -92,3 +92,24 @@ export const IMAGE_SIZES = {
   hero: "(max-width: 900px) 100vw, 700px",
   article: "(max-width: 740px) 100vw, 700px",
 } as const;
+
+// ---------------------------------------------------------------------------
+// Best width (px) we can obtain for a photo - used to pick a sharp lead story.
+//   upgradable CDNs  -> the largest size imageSrcSet() offers
+//   signed CDNs      -> the fixed size encoded in the URL (Tribun 148, kly 673)
+//   contributor uploads (Supabase storage) -> full-size photos, trusted
+//   anything else    -> 0 (unknown, lowest priority)
+// ---------------------------------------------------------------------------
+export function maxImageWidth(url: string | null | undefined): number {
+  if (!url) return 0;
+  const clean = url.replace(/&amp;/g, "&");
+
+  if (ANTARA_RE.test(clean)) return ANTARA_WIDTHS[ANTARA_WIDTHS.length - 1];
+  if (/^https?:\/\/akcdn\.detik\.net\.id\//.test(clean)) {
+    return DETIK_WIDTHS[DETIK_WIDTHS.length - 1];
+  }
+  if (/\.supabase\.co\/storage\//.test(clean)) return 1600;
+
+  const fixed = /\/(\d+)x\d+\//.exec(clean);
+  return fixed ? Number(fixed[1]) : 0;
+}

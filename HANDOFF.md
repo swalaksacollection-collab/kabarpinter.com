@@ -237,6 +237,11 @@ from other outlets, raise the same concern again before doing it.
   layout CSS (cards are 112px thumbnails on phones, 2-3 columns above).
   Verify in a browser by reading `img.currentSrc` - *not* `naturalWidth`
   (browsers rescale it for `w`-descriptor srcsets).
+- **Homepage lead story** is chosen by `lib/lead.ts` `pickLead()`: among the
+  newest 6 hero-eligible articles, the first whose photo can be served >=1000px
+  (`maxImageWidth()` in `lib/images.ts`); otherwise the sharpest available.
+  Reason: Liputan6 (673px) and Tribunnews (148px) photos look blurry in the
+  ~700px hero slot. Freshness still wins when the newest photo is sharp.
 - Public pages use the cookie-free `createPublicClient()`
   (`lib/supabase/public.ts`) so they stay static/ISR; only session-dependent
   code uses `createServerClient()`. Any `cookies()` call makes a route dynamic
