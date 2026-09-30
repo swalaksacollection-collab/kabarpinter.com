@@ -3,11 +3,24 @@ import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
 import { getSubmittedArticles } from "@/lib/articles";
 import { categoryLabel } from "@/lib/categories";
+import { AdminNav } from "@/components/AdminNav";
+
+// Staff = editor or admin. The real enforcement is the database (RLS +
+// is_editor()); this only avoids pointless writes and fails clearly.
+async function isStaff(supabase: Awaited<ReturnType<typeof createServerClient>>) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  return data?.role === "editor" || data?.role === "admin";
+}
 
 async function approveArticle(formData: FormData) {
   "use server";
   const id = formData.get("id") as string;
   const supabase = await createServerClient();
+  if (!(await isStaff(supabase))) return;
   await supabase
     .from("articles")
     .update({ status: "published", published_at: new Date().toISOString() })
@@ -20,6 +33,7 @@ async function rejectArticle(formData: FormData) {
   const id = formData.get("id") as string;
   const note = (formData.get("note") as string) || null;
   const supabase = await createServerClient();
+  if (!(await isStaff(supabase))) return;
   await supabase.from("articles").update({ status: "rejected", editor_note: note }).eq("id", id);
   revalidatePath("/redaksi/review");
 }
@@ -38,7 +52,7 @@ export default async function EditorReviewPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.role !== "editor") {
+  if (profile?.role !== "editor" && profile?.role !== "admin") {
     return (
       <main className="section">
         <div className="container">
@@ -59,6 +73,7 @@ export default async function EditorReviewPage() {
             Antrean Review
           </h1>
         </div>
+        <AdminNav current="review" isAdmin={profile?.role === "admin"} />
 
         {submitted.length === 0 ? (
           <p style={{ color: "var(--ink-mute)" }}>Tidak ada artikel yang menunggu review.</p>

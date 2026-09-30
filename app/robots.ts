@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         // Private / non-content areas: contributor login + dashboard, the
         // editor review queue, and search result pages (thin, duplicate).
-        disallow: ["/kontributor/", "/redaksi/review", "/cari"],
+        disallow: ["/kontributor/", "/redaksi/review", "/redaksi/pelamar", "/auth/", "/cari"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

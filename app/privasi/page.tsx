@@ -31,17 +31,24 @@ export default function Page() {
         membangun profil pribadi Anda.
       </p>
       <p>
-        <strong>Kontributor dan pakar</strong> yang masuk lewat halaman kontributor
+        <strong>Kontributor dan pakar</strong> yang mendaftar lewat halaman kontributor
         memberikan data berikut:
       </p>
       <ul>
         <li>alamat email (untuk tautan masuk sekali pakai / magic link);</li>
-        <li>nama tampilan dan keterangan profil atau kredensial (bio);</li>
+        <li>
+          data pengajuan: nama lengkap sesuai KTP, nomor HP/WhatsApp, kota domisili,
+          profesi, institusi/afiliasi, bio dan kredensial, serta tautan profil (opsional);
+        </li>
+        <li>foto diri (selfie) untuk verifikasi identitas;</li>
         <li>tulisan, judul, ringkasan, kategori, dan gambar yang Anda unggah.</li>
       </ul>
       <p>
-        Nama tampilan, bio, dan tulisan yang diterbitkan akan tampil publik
-        sebagai byline. Alamat email Anda <strong>tidak</strong> ditampilkan.
+        <strong>Yang tampil publik</strong> setelah pengajuan disetujui hanyalah nama
+        tampilan dan bio Anda, sebagai byline di tulisan yang diterbitkan. Nama lengkap,
+        nomor HP, kota, email, dan foto diri <strong>tidak pernah ditampilkan</strong> di
+        situs. Foto diri disimpan di penyimpanan privat dan hanya dapat dilihat oleh Anda
+        sendiri dan admin Kabarpinter.com.
       </p>
       <p>
         Server kami juga mencatat data teknis standar (alamat IP, waktu akses,
@@ -57,6 +64,7 @@ export default function Page() {
 
       <h2>3. Untuk apa data dipakai</h2>
       <ul>
+        <li>memverifikasi identitas dan kredensial calon kontributor sebelum tulisannya tayang;</li>
         <li>menjalankan proses masuk, penulisan, peninjauan, dan penerbitan artikel;</li>
         <li>menampilkan byline penulis pada artikel yang diterbitkan;</li>
         <li>memahami penggunaan situs agar dapat kami perbaiki;</li>
@@ -92,9 +100,9 @@ export default function Page() {
 
       <h2>6. Penyimpanan data</h2>
       <p>
-        Data akun kontributor disimpan selama akun aktif atau selama diperlukan
-        untuk tujuan di atas. Anda dapat meminta penghapusan kapan saja
-        (lihat bagian 7).
+        Data akun dan data pengajuan kontributor (termasuk foto diri) disimpan selama
+        akun aktif atau selama diperlukan untuk tujuan di atas. Anda dapat meminta
+        penghapusan kapan saja (lihat bagian 7).
       </p>
 
       <h2>7. Hak Anda</h2>

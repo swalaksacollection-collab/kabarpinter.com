@@ -805,3 +805,42 @@ h1, h2, h3, h4 {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
+
+/* ---- Contributor application + staff pages ---- */
+.notice {
+  padding: 14px 16px;
+  border-radius: 4px;
+  border-left: 4px solid var(--ink-faint);
+  background: var(--paper-warm);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+.notice--info { border-left-color: var(--c-news, #1e3a8a); }
+.notice--success { border-left-color: #047857; background: #ecfdf5; }
+.notice--error { border-left-color: var(--red); background: var(--red-soft); color: var(--red-deep); }
+.notice a { text-decoration: underline; }
+
+.cform__group { border: 1px solid var(--paper-line); border-radius: 4px; padding: 16px; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.cform__group legend { font-weight: 700; font-size: 14px; padding: 0 8px; }
+.cform__hint { color: var(--ink-mute); font-size: 12.5px; line-height: 1.5; margin: 0; }
+.cform__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--red); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+.selfie-preview { width: 160px; height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid var(--paper-line); background: var(--paper-warm); }
+
+.admin-nav { display: flex; gap: 8px; flex-wrap: wrap; margin: -8px 0 28px; }
+.admin-nav__item { padding: 7px 14px; border-radius: 999px; background: var(--paper-warm); font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.admin-nav__item:hover { background: var(--yellow-soft); }
+.admin-nav__item--active { background: var(--yellow); color: var(--ink); }
+
+.applicant__top { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 14px; }
+.applicant__selfie { width: 120px; height: 120px; flex: none; object-fit: cover; border-radius: 8px; border: 1px solid var(--paper-line); background: var(--paper-warm); }
+.applicant__selfie--empty { display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink-mute); }
+.applicant__meta { font-size: 13px; color: var(--ink-soft); margin: 2px 0; }
+.applicant__meta a { color: var(--red); text-decoration: underline; }
+@media (max-width: 560px) {
+  .applicant__top { flex-direction: column; }
+  .review-queue__reject-form { flex-wrap: wrap; width: 100%; }
+  .review-queue__reject-form .cform__input { min-width: 0; flex: 1 1 180px; }
+}

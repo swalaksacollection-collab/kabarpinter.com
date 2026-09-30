@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="footer">
@@ -16,33 +18,33 @@ export function Footer() {
           <div>
             <h4>Kategori</h4>
             <ul>
-              <li><a href="/kategori/news">PinterNews</a></li>
-              <li><a href="/kategori/finance">PinterFinance</a></li>
-              <li><a href="/kategori/hot">PinterHot</a></li>
-              <li><a href="/kategori/sport">PinterSport</a></li>
-              <li><a href="/kategori/wolipop">PinterStyle</a></li>
-              <li><a href="/opini">✍️ Ulasan Pakar</a></li>
+              <li><Link href="/kategori/news">PinterNews</Link></li>
+              <li><Link href="/kategori/finance">PinterFinance</Link></li>
+              <li><Link href="/kategori/hot">PinterHot</Link></li>
+              <li><Link href="/kategori/sport">PinterSport</Link></li>
+              <li><Link href="/kategori/wolipop">PinterStyle</Link></li>
+              <li><Link href="/opini">✍️ Ulasan Pakar</Link></li>
             </ul>
           </div>
           <div>
             <h4>Tentang</h4>
             <ul>
-              <li><a href="/tentang">Tentang Kami</a></li>
-              <li><a href="/redaksi">Tim Redaksi</a></li>
-              <li><a href="/pedoman">Pedoman Media Siber</a></li>
-              <li><a href="/etika">Kode Etik</a></li>
-              <li><a href="/privasi">Kebijakan Privasi</a></li>
-              <li><a href="/kontak">Kontak</a></li>
-              <li><a href="/kontributor/masuk">Jadi Kontributor/Pakar</a></li>
+              <li><Link href="/tentang">Tentang Kami</Link></li>
+              <li><Link href="/redaksi">Tim Redaksi</Link></li>
+              <li><Link href="/pedoman">Pedoman Media Siber</Link></li>
+              <li><Link href="/etika">Kode Etik</Link></li>
+              <li><Link href="/privasi">Kebijakan Privasi</Link></li>
+              <li><Link href="/kontak">Kontak</Link></li>
+              <li><Link href="/kontributor/masuk">Jadi Kontributor/Pakar</Link></li>
             </ul>
           </div>
           <div>
             <h4>Pengiklan</h4>
             <ul>
-              <li><a href="/pasang-iklan">Pasang Iklan</a></li>
-              <li><a href="/rate-card">Rate Card</a></li>
-              <li><a href="/affiliate">Program Affiliate</a></li>
-              <li><a href="/sponsorship">Sponsorship Konten</a></li>
+              <li><Link href="/pasang-iklan">Pasang Iklan</Link></li>
+              <li><Link href="/rate-card">Rate Card</Link></li>
+              <li><Link href="/affiliate">Program Affiliate</Link></li>
+              <li><Link href="/sponsorship">Sponsorship Konten</Link></li>
             </ul>
           </div>
         </div>

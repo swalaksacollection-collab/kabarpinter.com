@@ -1,28 +1,21 @@
-"use client";
+import type { Metadata } from "next";
+import { LoginForm } from "@/components/contributor/LoginForm";
 
-import { useState } from "react";
-import { createBrowserClient } from "@/lib/supabase/client";
+export const metadata: Metadata = {
+  title: "Masuk Kontributor",
+  robots: { index: false },
+};
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const supabase = createBrowserClient();
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) {
-      setError(error.message);
-      return;
-    }
-    setSent(true);
-  }
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
 
   return (
     <main className="section">
-      <div className="container" style={{ maxWidth: 420 }}>
+      <div className="container" style={{ maxWidth: 460 }}>
         <div className="section__head">
           <h1 className="section__title">
             <span className="section__rule" />
@@ -30,33 +23,14 @@ export default function LoginPage() {
           </h1>
         </div>
         <p style={{ color: "var(--ink-mute)", marginTop: -12, marginBottom: 24 }}>
-          Untuk kontributor dan pakar (dokter, akademisi, praktisi) yang menulis
-          ulasan di Kabarpinter.com. Tidak perlu kata sandi - kami kirim link masuk
-          ke email Anda.
+          Untuk kontributor dan pakar (dokter, akademisi, praktisi) yang menulis ulasan di
+          Kabarpinter.com. Tidak perlu kata sandi — kami kirim link masuk ke email Anda.
         </p>
-        {sent ? (
-          <p>
-            Link masuk sudah dikirim ke <strong>{email}</strong>. Cek email Anda.
-          </p>
-        ) : (
-          <form onSubmit={handleSubmit} className="cform">
-            <label className="cform__label">
-              Email
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@anda.com"
-                className="cform__input"
-              />
-            </label>
-            {error && <p className="cform__error">{error}</p>}
-            <button type="submit" className="btn-primary">
-              Kirim Link Masuk
-            </button>
-          </form>
-        )}
+        <p style={{ color: "var(--ink-mute)", fontSize: 14, marginBottom: 24 }}>
+          Kontributor baru diminta melengkapi biodata dan foto diri. Pengajuan Anda ditinjau
+          tim redaksi sebelum bisa mengirim tulisan.
+        </p>
+        <LoginForm linkExpired={error === "link"} />
       </div>
     </main>
   );

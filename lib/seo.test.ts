@@ -2,6 +2,20 @@ import { describe, it, expect } from "vitest";
 import { absoluteUrl, describeText, articleJsonLd, serializeJsonLd } from "./seo";
 import type { Article } from "./types";
 
+// Shape of the JSON-LD we assert on (avoids `any` in the tests).
+type LD = {
+  "@context": string;
+  "@type": string;
+  headline: string;
+  datePublished: string;
+  dateModified: string;
+  image?: string[];
+  author: unknown;
+  publisher: { name: string };
+  mainEntityOfPage: string;
+  isBasedOn?: string;
+};
+
 const base = {
   id: "1",
   title: "Harga Emas Naik Tajam",
@@ -57,7 +71,7 @@ describe("describeText", () => {
 
 describe("articleJsonLd", () => {
   it("builds a NewsArticle for an RSS article, crediting the source org", () => {
-    const ld = articleJsonLd(base) as Record<string, any>;
+    const ld = articleJsonLd(base) as unknown as LD;
     expect(ld["@context"]).toBe("https://schema.org");
     expect(ld["@type"]).toBe("NewsArticle");
     expect(ld.headline).toBe("Harga Emas Naik Tajam");
@@ -76,18 +90,18 @@ describe("articleJsonLd", () => {
       source_type: "contributor",
       external_url: null,
       author: { display_name: "dr. Andi Wijaya, Sp.PD", bio: null },
-    }) as Record<string, any>;
+    }) as unknown as LD;
     expect(ld.author).toEqual({ "@type": "Person", name: "dr. Andi Wijaya, Sp.PD" });
     expect(ld.isBasedOn).toBeUndefined();
   });
 
   it("omits image when the article has none", () => {
-    const ld = articleJsonLd({ ...base, image_url: null }) as Record<string, any>;
+    const ld = articleJsonLd({ ...base, image_url: null }) as unknown as LD;
     expect("image" in ld).toBe(false);
   });
 
   it("keeps headline within Google's 110 character limit", () => {
-    const ld = articleJsonLd({ ...base, title: "x".repeat(200) }) as Record<string, any>;
+    const ld = articleJsonLd({ ...base, title: "x".repeat(200) }) as unknown as LD;
     expect(ld.headline.length).toBeLessThanOrEqual(110);
   });
 });
