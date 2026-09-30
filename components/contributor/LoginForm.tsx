@@ -27,7 +27,11 @@ export function LoginForm({ linkExpired }: { linkExpired: boolean }) {
     setError(null);
     setBusy(true);
     const supabase = createBrowserClient();
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() });
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      // Default (uneditable) Supabase email template -> PKCE callback route.
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
     setBusy(false);
     if (error) {
       setError(friendlyError(error.message));
@@ -40,7 +44,8 @@ export function LoginForm({ linkExpired }: { linkExpired: boolean }) {
     return (
       <div className="notice notice--success">
         Link masuk sudah dikirim ke <strong>{email}</strong>. Buka email Anda (cek juga
-        folder Spam), lalu klik tautannya.
+        folder Spam), lalu klik tautannya. <strong>Buka di browser yang sama</strong> dengan
+        yang Anda pakai sekarang.
       </div>
     );
   }
@@ -49,7 +54,8 @@ export function LoginForm({ linkExpired }: { linkExpired: boolean }) {
     <>
       {linkExpired && (
         <div className="notice notice--error">
-          Link masuk tidak valid atau sudah kedaluwarsa. Minta link baru di bawah ini.
+          Link masuk tidak valid, sudah kedaluwarsa, atau dibuka di browser yang berbeda dari
+          yang meminta link. Minta link baru di bawah ini, lalu buka di browser yang sama.
         </div>
       )}
       <form onSubmit={handleSubmit} className="cform">
