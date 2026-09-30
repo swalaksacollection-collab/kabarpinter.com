@@ -5,7 +5,7 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { LiveWidget } from "@/components/LiveWidget";
 import { PokokBerita } from "@/components/PokokBerita";
 import { categoryLabel } from "@/lib/categories";
-import { upgradeImageUrl } from "@/lib/images";
+import { upgradeImageUrl, imageSrcSet, IMAGE_SIZES } from "@/lib/images";
 import type { Article } from "@/lib/types";
 
 export const revalidate = 300;
@@ -44,7 +44,12 @@ function LeadStory({ article }: { article: Article }) {
               <StoryBadges article={article} />
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={upgradeImageUrl(article.image_url, "hero") ?? article.image_url} alt="" />
+            <img
+              src={upgradeImageUrl(article.image_url, "hero") ?? article.image_url}
+              srcSet={imageSrcSet(article.image_url)}
+              sizes={imageSrcSet(article.image_url) ? IMAGE_SIZES.hero : undefined}
+              alt=""
+            />
           </div>
         ) : (
           <div className="story__badges" style={{ marginBottom: 12 }}>

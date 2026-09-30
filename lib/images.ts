@@ -47,3 +47,45 @@ export function upgradeImageUrl(
 
   return clean;
 }
+
+// ---------------------------------------------------------------------------
+// srcset: let the BROWSER pick the size for its own screen density, so a 3x
+// phone gets a genuinely sharper photo while a 1x desktop does not download
+// the big file. Only sizes each CDN was verified to serve are listed:
+//   ANTARA  800x533 and 1200x800 only (400x267 / 1600x1067+ return HTTP 400)
+//   detik   w=360, 720, 1080, 1440   (w=2160 returns a *smaller* image)
+// Signed CDNs (Tribunnews, Liputan6/kly) have no variants -> undefined, and
+// the caller falls back to the plain src.
+// ---------------------------------------------------------------------------
+const ANTARA_WIDTHS = [800, 1200] as const;
+const DETIK_WIDTHS = [360, 720, 1080, 1440] as const;
+
+export function imageSrcSet(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  const clean = url.replace(/&amp;/g, "&");
+
+  const antara = ANTARA_RE.exec(clean);
+  if (antara) {
+    const [, prefix, w, h, rest] = antara;
+    if (Math.abs(Number(w) / Number(h) - 1.5) >= 0.02) return undefined;
+    return ANTARA_WIDTHS.map(
+      (width) => `${prefix}${width}x${Math.round((width * 2) / 3)}${rest} ${width}w`
+    ).join(", ");
+  }
+
+  if (/^https?:\/\/akcdn\.detik\.net\.id\//.test(clean) && /([?&])w=\d+/.test(clean)) {
+    return DETIK_WIDTHS.map(
+      (width) => `${clean.replace(/([?&]w=)\d+/, `$1${width}`)} ${width}w`
+    ).join(", ");
+  }
+
+  return undefined;
+}
+
+// `sizes` hints so the browser knows how wide the image is actually shown.
+// Keep in step with the layout CSS (card grid / hero column / article column).
+export const IMAGE_SIZES = {
+  card: "(max-width: 640px) 100vw, 400px",
+  hero: "(max-width: 900px) 100vw, 700px",
+  article: "(max-width: 800px) 100vw, 760px",
+} as const;

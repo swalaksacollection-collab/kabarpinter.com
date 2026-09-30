@@ -9,7 +9,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { PokokBerita } from "@/components/PokokBerita";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
-import { upgradeImageUrl } from "@/lib/images";
+import { upgradeImageUrl, imageSrcSet, IMAGE_SIZES } from "@/lib/images";
 
 export const revalidate = 60;
 
@@ -122,7 +122,12 @@ export default async function ArticlePage({
           {article.image_url && (
             <figure className="article__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={upgradeImageUrl(article.image_url, "hero") ?? article.image_url} alt={article.title} />
+              <img
+                src={upgradeImageUrl(article.image_url, "hero") ?? article.image_url}
+                srcSet={imageSrcSet(article.image_url)}
+                sizes={imageSrcSet(article.image_url) ? IMAGE_SIZES.article : undefined}
+                alt={article.title}
+              />
               {(article.source_name || article.author?.display_name) && (
                 <figcaption>
                   Foto: {article.source_name ?? article.author?.display_name}

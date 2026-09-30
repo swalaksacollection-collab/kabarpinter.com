@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { upgradeImageUrl } from "./images";
+import { upgradeImageUrl, imageSrcSet } from "./images";
 
 describe("upgradeImageUrl - ANTARA", () => {
   it("raises a tiny 255x170 thumbnail to 800x533 for cards", () => {
@@ -84,5 +84,55 @@ describe("upgradeImageUrl - everything else", () => {
     expect(upgradeImageUrl(undefined, "card")).toBeNull();
     expect(upgradeImageUrl("", "card")).toBe("");
     expect(upgradeImageUrl("bukan url", "card")).toBe("bukan url");
+  });
+});
+
+describe("imageSrcSet", () => {
+  it("offers both ANTARA sizes the CDN actually serves (800w and 1200w)", () => {
+    expect(
+      imageSrcSet("https://cdn.antaranews.com/cache/255x170/2021/06/17/foto.jpg")
+    ).toBe(
+      "https://cdn.antaranews.com/cache/800x533/2021/06/17/foto.jpg 800w, " +
+        "https://cdn.antaranews.com/cache/1200x800/2021/06/17/foto.jpg 1200w"
+    );
+  });
+
+  it("works for img.antaranews.com and from an already-800 source url", () => {
+    expect(
+      imageSrcSet("https://img.antaranews.com/cache/800x533/2026/09/30/thumb/a.jpg")
+    ).toBe(
+      "https://img.antaranews.com/cache/800x533/2026/09/30/thumb/a.jpg 800w, " +
+        "https://img.antaranews.com/cache/1200x800/2026/09/30/thumb/a.jpg 1200w"
+    );
+  });
+
+  it("offers four detik widths and keeps the quality parameter", () => {
+    expect(
+      imageSrcSet("https://akcdn.detik.net.id/visual/2026/09/30/x_169.jpeg?w=360&amp;q=90")
+    ).toBe(
+      "https://akcdn.detik.net.id/visual/2026/09/30/x_169.jpeg?w=360&q=90 360w, " +
+        "https://akcdn.detik.net.id/visual/2026/09/30/x_169.jpeg?w=720&q=90 720w, " +
+        "https://akcdn.detik.net.id/visual/2026/09/30/x_169.jpeg?w=1080&q=90 1080w, " +
+        "https://akcdn.detik.net.id/visual/2026/09/30/x_169.jpeg?w=1440&q=90 1440w"
+    );
+  });
+
+  it("returns undefined where no larger variant exists (signed CDNs, odd ratios, no width)", () => {
+    expect(
+      imageSrcSet("https://asset.tribunnews.com/sig=/148x99/filters:quality(30)/a.jpg")
+    ).toBeUndefined();
+    expect(
+      imageSrcSet("https://cdn0-production-images-kly.akamaized.net/sig=/673x379/smart/x.jpg")
+    ).toBeUndefined();
+    expect(
+      imageSrcSet("https://cdn.antaranews.com/cache/300x300/2026/09/30/square.jpg")
+    ).toBeUndefined();
+    expect(imageSrcSet("https://akcdn.detik.net.id/visual/x_169.jpeg")).toBeUndefined();
+  });
+
+  it("returns undefined for null / empty input", () => {
+    expect(imageSrcSet(null)).toBeUndefined();
+    expect(imageSrcSet(undefined)).toBeUndefined();
+    expect(imageSrcSet("")).toBeUndefined();
   });
 });
