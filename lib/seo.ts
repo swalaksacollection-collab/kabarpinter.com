@@ -1,5 +1,6 @@
 import type { Article } from "./types";
 import { SITE_URL, SITE_NAME } from "./site";
+import { upgradeImageUrl } from "./images";
 
 // Turn a site path into a fully-qualified URL (leaves absolute URLs alone).
 export function absoluteUrl(path: string): string {
@@ -50,7 +51,7 @@ export function articleJsonLd(article: Article): Record<string, unknown> {
 
   const description = describeText(article.excerpt);
   if (description) ld.description = description;
-  if (article.image_url) ld.image = [article.image_url];
+  if (article.image_url) ld.image = [upgradeImageUrl(article.image_url, "hero") ?? article.image_url];
   if (!isContributor && article.external_url) ld.isBasedOn = article.external_url;
 
   return ld;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Article } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
+import { upgradeImageUrl } from "@/lib/images";
 
 // `priority` = above-the-fold card: load its image eagerly. Everything else
 // stays lazy. Explicit width/height (matches the 16:10 media box) reserves
@@ -19,7 +20,7 @@ export function ArticleCard({
           <div className="story__media">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={article.image_url}
+              src={upgradeImageUrl(article.image_url, "card") ?? article.image_url}
               alt=""
               width={640}
               height={400}

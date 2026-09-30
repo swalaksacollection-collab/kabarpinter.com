@@ -9,6 +9,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { PokokBerita } from "@/components/PokokBerita";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
+import { upgradeImageUrl } from "@/lib/images";
 
 export const revalidate = 60;
 
@@ -26,7 +27,7 @@ export async function generateMetadata({
   const description = describeText(article.excerpt) || describeText(article.body);
   const path = `/artikel/${article.slug}`;
   const images = article.image_url
-    ? [{ url: article.image_url, alt: article.title }]
+    ? [{ url: upgradeImageUrl(article.image_url, "hero") ?? article.image_url, alt: article.title }]
     : [DEFAULT_OG_IMAGE];
 
   return {
@@ -121,7 +122,7 @@ export default async function ArticlePage({
           {article.image_url && (
             <figure className="article__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={article.image_url} alt={article.title} />
+              <img src={upgradeImageUrl(article.image_url, "hero") ?? article.image_url} alt={article.title} />
               {(article.source_name || article.author?.display_name) && (
                 <figcaption>
                   Foto: {article.source_name ?? article.author?.display_name}
