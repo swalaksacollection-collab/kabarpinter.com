@@ -4,6 +4,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import {
   SITE_URL,
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         <Footer />
         <Analytics />
+        <InstallPrompt />
       </body>
     </html>
   );
