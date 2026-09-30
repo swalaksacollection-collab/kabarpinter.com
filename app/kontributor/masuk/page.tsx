@@ -21,31 +21,43 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-4 py-16">
-      <h1 className="text-3xl font-bold text-brand-charcoal">Masuk Kontributor</h1>
-      {sent ? (
-        <p className="mt-6 text-brand-charcoal/70">
-          Link masuk sudah dikirim ke {email}. Cek email Anda.
+    <main className="section">
+      <div className="container" style={{ maxWidth: 420 }}>
+        <div className="section__head">
+          <h1 className="section__title">
+            <span className="section__rule" />
+            Masuk Kontributor
+          </h1>
+        </div>
+        <p style={{ color: "var(--ink-mute)", marginTop: -12, marginBottom: 24 }}>
+          Untuk kontributor dan pakar (dokter, akademisi, praktisi) yang menulis
+          ulasan di Kabarpinter.com. Tidak perlu kata sandi - kami kirim link masuk
+          ke email Anda.
         </p>
-      ) : (
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@anda.com"
-            className="w-full rounded border border-brand-charcoal/20 px-4 py-2"
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            className="rounded bg-brand-charcoal px-4 py-2 text-brand-cream"
-          >
-            Kirim Link Masuk
-          </button>
-        </form>
-      )}
+        {sent ? (
+          <p>
+            Link masuk sudah dikirim ke <strong>{email}</strong>. Cek email Anda.
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="cform">
+            <label className="cform__label">
+              Email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@anda.com"
+                className="cform__input"
+              />
+            </label>
+            {error && <p className="cform__error">{error}</p>}
+            <button type="submit" className="btn-primary">
+              Kirim Link Masuk
+            </button>
+          </form>
+        )}
+      </div>
     </main>
   );
 }

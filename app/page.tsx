@@ -16,23 +16,37 @@ function timeAgo(iso: string | null): string {
   return `${Math.round(hours / 24)} hari lalu`;
 }
 
+function StoryBadges({ article }: { article: Article }) {
+  return (
+    <>
+      {article.source_type === "contributor" && (
+        <span className="story__badge story__badge--opini">✍️ Ulasan Pakar</span>
+      )}
+      {article.category_slug && (
+        <span className={`story__badge story__badge--${article.category_slug}`}>
+          {categoryLabel(article.category_slug)}
+        </span>
+      )}
+    </>
+  );
+}
+
 function LeadStory({ article }: { article: Article }) {
+  const byline = article.author?.display_name ?? article.source_name ?? "Kontributor";
   return (
     <article className="story story--lead">
       <Link href={`/artikel/${article.slug}`}>
         {article.image_url && (
           <div className="story__media">
-            {article.category_slug && (
-              <span className={`story__badge story__badge--${article.category_slug}`}>
-                {categoryLabel(article.category_slug)}
-              </span>
-            )}
+            <div className="story__badges">
+              <StoryBadges article={article} />
+            </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={article.image_url} alt="" />
           </div>
         )}
         <div className="story__meta">
-          <span className="story__source">{article.source_name ?? "Kontributor"}</span>
+          <span className="story__source">{byline}</span>
           <span>•</span>
           <span>{timeAgo(article.published_at)}</span>
           <span className="story__viral">🔥 Viral Score {article.score}</span>
@@ -45,17 +59,16 @@ function LeadStory({ article }: { article: Article }) {
 }
 
 function SideStory({ article }: { article: Article }) {
+  const byline = article.author?.display_name ?? article.source_name ?? "Kontributor";
   return (
     <article className="story story--side">
       <Link href={`/artikel/${article.slug}`}>
-        {article.category_slug && (
-          <span className={`story__badge story__badge--${article.category_slug}`}>
-            {categoryLabel(article.category_slug)}
-          </span>
-        )}
+        <div className="story__badges">
+          <StoryBadges article={article} />
+        </div>
         <h2 className="story__headline">{article.title}</h2>
         <div className="story__meta">
-          <span>{article.source_name ?? "Kontributor"}</span>
+          <span>{byline}</span>
           <span>•</span>
           <span>{timeAgo(article.published_at)}</span>
         </div>

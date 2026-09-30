@@ -30,7 +30,9 @@ export default async function ArticlePage({
           <nav className="article__breadcrumb" aria-label="Breadcrumb">
             <Link href="/">Beranda</Link>
             <span>›</span>
-            {article.category_slug ? (
+            {article.source_type === "contributor" ? (
+              <Link href="/opini">Ulasan Pakar</Link>
+            ) : article.category_slug ? (
               <Link href={`/kategori/${article.category_slug}`}>
                 {categoryLabel(article.category_slug)}
               </Link>
@@ -38,6 +40,12 @@ export default async function ArticlePage({
               <span>Umum</span>
             )}
           </nav>
+
+          {article.source_type === "contributor" && (
+            <span className="story__badge story__badge--opini" style={{ marginBottom: 12 }}>
+              ✍️ Ulasan Pakar
+            </span>
+          )}
 
           <h1 className="article__headline">{article.title}</h1>
 
@@ -49,8 +57,14 @@ export default async function ArticlePage({
               </svg>
               {fullDateTime(article.published_at)}
             </span>
-            <span className="story__source">{article.source_name ?? "Kontributor"}</span>
+            <span className="story__source">
+              {article.author?.display_name ?? article.source_name ?? "Kontributor"}
+            </span>
           </div>
+
+          {article.author?.bio && (
+            <p className="article__author-bio">{article.author.bio}</p>
+          )}
 
           <ShareButtons title={article.title} path={`/artikel/${article.slug}`} />
 
@@ -58,8 +72,10 @@ export default async function ArticlePage({
             <figure className="article__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={article.image_url} alt="" />
-              {article.source_name && (
-                <figcaption>Foto: {article.source_name}</figcaption>
+              {(article.source_name || article.author?.display_name) && (
+                <figcaption>
+                  Foto: {article.source_name ?? article.author?.display_name}
+                </figcaption>
               )}
             </figure>
           )}

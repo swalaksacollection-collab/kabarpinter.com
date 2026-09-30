@@ -19,3 +19,9 @@ export function categoryLabel(slug: string | null): string {
   if (!slug) return "Umum";
   return CATEGORY_LABELS[slug] ?? slug;
 }
+
+// For select dropdowns (e.g. the contributor submission form).
+export const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS).map(([slug, label]) => ({
+  slug,
+  label,
+}));

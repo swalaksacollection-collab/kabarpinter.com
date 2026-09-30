@@ -21,6 +21,7 @@ export function Footer() {
               <li><a href="/kategori/hot">PinterHot</a></li>
               <li><a href="/kategori/sport">PinterSport</a></li>
               <li><a href="/kategori/wolipop">PinterStyle</a></li>
+              <li><a href="/opini">✍️ Ulasan Pakar</a></li>
             </ul>
           </div>
           <div>
@@ -31,6 +32,7 @@ export function Footer() {
               <li><a href="/pedoman">Pedoman Media Siber</a></li>
               <li><a href="/etika">Kode Etik</a></li>
               <li><a href="/kontak">Kontak</a></li>
+              <li><a href="/kontributor/masuk">Jadi Kontributor/Pakar</a></li>
             </ul>
           </div>
           <div>

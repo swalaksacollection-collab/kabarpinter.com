@@ -23,4 +23,16 @@ export type Article = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  // Embedded via the contributor_id FK (see lib/articles.ts's
+  // SELECT_WITH_AUTHOR) - present for contributor-authored ("Ulasan
+  // Pakar") pieces, null for RSS-aggregated ones.
+  author?: { display_name: string; bio: string | null } | null;
+};
+
+export type Profile = {
+  id: string;
+  display_name: string;
+  bio: string | null;
+  role: "contributor" | "editor";
+  created_at: string;
 };
