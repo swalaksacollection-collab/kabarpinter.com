@@ -44,6 +44,31 @@ export async function getArticlesByCategory(categorySlug: string): Promise<Artic
   return data ?? [];
 }
 
+export async function getRegionalArticles(limit = 30): Promise<Article[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("status", "published")
+    .not("region_slug", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getArticlesByRegion(regionSlug: string): Promise<Article[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("status", "published")
+    .eq("region_slug", regionSlug)
+    .order("published_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const supabase = await createServerClient();
   const { data, error } = await supabase

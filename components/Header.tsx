@@ -1,26 +1,7 @@
 import Link from "next/link";
 import { getTopArticles } from "@/lib/articles";
+import { NavBar } from "@/components/NavBar";
 import type { Article } from "@/lib/types";
-
-const NAV = [
-  { href: "/", label: "Beranda" },
-  { href: "/daily-brief", label: "📋 Daily Brief", accent: true },
-  { href: "/kategori/news", label: "PinterNews" },
-  { href: "/kategori/finance", label: "PinterFinance" },
-  { href: "/kategori/hot", label: "PinterHot" },
-  { href: "/kategori/inet", label: "PinterInet" },
-  { href: "/kategori/sport", label: "PinterSport" },
-  { href: "/kategori/oto", label: "PinterOto" },
-  { href: "/kategori/travel", label: "PinterTravel" },
-  { href: "/kategori/food", label: "PinterFood" },
-  { href: "/kategori/health", label: "PinterHealth" },
-  { href: "/kategori/wolipop", label: "PinterStyle" },
-  { href: "/kategori/20detik", label: "PinterClip" },
-];
-
-// Decorative only ("Daerah" region filter) — this project has no real
-// per-region content or filtering behind it.
-const DAERAH = ["Jabar", "Jateng", "Jatim", "Sumut", "Sulsel", "Bali"];
 
 const DAYS = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
 const MONTHS = [
@@ -98,28 +79,7 @@ export async function Header() {
         </div>
       </div>
 
-      <nav className="masthead__nav">
-        <ul>
-          {NAV.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`nav-link${item.accent ? " nav-link--accent" : ""}`}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-          <li className="nav-dropdown">
-            <span className="nav-link" style={{ cursor: "default" }}>Daerah ▾</span>
-            <div className="nav-dropdown__menu">
-              {DAERAH.map((d) => (
-                <Link key={d} href="/">{d}</Link>
-              ))}
-            </div>
-          </li>
-        </ul>
-      </nav>
+      <NavBar />
     </header>
   );
 }

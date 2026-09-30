@@ -222,6 +222,7 @@ h1, h2, h3, h4 {
   z-index: 50;
 }
 .masthead__nav ul {
+  position: relative;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
@@ -231,28 +232,39 @@ h1, h2, h3, h4 {
   overflow-x: auto;
   list-style: none;
 }
+/* The sliding yellow "active page" indicator (see components/NavBar.tsx):
+   an absolutely-positioned pill that animates to whichever nav item
+   matches the current route, instead of being permanently stuck on one
+   item. Sits behind the link text (z-index 0 vs 1). */
+.nav-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: var(--yellow);
+  border-radius: 4px;
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .nav-link {
+  position: relative;
+  z-index: 1;
   display: inline-block;
-  padding: 14px 14px;
+  padding: 10px 14px;
+  margin: 2px 0;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.85);
   white-space: nowrap;
   letter-spacing: 0.01em;
 }
-.nav-link:hover,
-.nav-link.is-active { color: #ffffff; }
-.nav-link--accent {
-  background: var(--yellow);
-  color: var(--ink);
-  border-radius: 3px;
-  padding: 8px 14px;
-  margin: 0 4px;
-}
-.nav-link--accent:hover { color: var(--ink); }
+.nav-link:hover { color: #ffffff; }
+.nav-link.is-active { color: var(--ink); }
 
-/* Secondary "Daerah" region dropdown - decorative only, no real
-   per-region content/filtering behind it. */
+/* Secondary "Daerah" region dropdown - Daerah is now a real nav
+   destination (/daerah, /daerah/[slug]) backed by real regional RSS
+   sources (migration 0011), not just decorative. */
 .nav-dropdown { position: relative; }
 .nav-dropdown__menu {
   display: none;
@@ -477,6 +489,27 @@ h1, h2, h3, h4 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 28px;
+}
+.region-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.region-picker__item {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-line);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.region-picker__item:hover { border-color: var(--red); color: var(--red); }
+.region-picker__item--active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
 }
 .story--card .story__media {
   aspect-ratio: 16 / 10;

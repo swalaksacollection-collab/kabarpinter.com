@@ -184,6 +184,7 @@ Deno.serve(async () => {
         if (score < MIN_SCORE) continue;
 
         const category = source.category_slug ?? matchTheme(item.title);
+        const region = source.region_slug ?? null;
 
         const { data: upserted, error } = await supabase
           .from("articles")
@@ -197,6 +198,7 @@ Deno.serve(async () => {
               external_url: item.link,
               image_url: item.imageUrl,
               category_slug: category,
+              region_slug: region,
               score,
               source_name: source.name,
               published_at: toIsoOrNow(item.pubDate),

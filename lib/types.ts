@@ -15,6 +15,7 @@ export type Article = {
   external_url: string | null;
   image_url: string | null;
   category_slug: string | null;
+  region_slug: string | null;
   score: number;
   source_name: string | null;
   contributor_id: string | null;
