@@ -6,6 +6,7 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { categoryLabel } from "@/lib/categories";
 import { fullDateTime } from "@/lib/date";
 import { ShareButtons } from "@/components/ShareButtons";
+import { PokokBerita } from "@/components/PokokBerita";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
 
@@ -129,7 +130,12 @@ export default async function ArticlePage({
             </figure>
           )}
 
-          {article.excerpt && <p className="article__lede">{article.excerpt}</p>}
+          <PokokBerita
+            points={article.summary_points}
+            excerpt={article.excerpt}
+            className="article__lede"
+            withLabel
+          />
 
           {article.body && (
             <div className="article__body">

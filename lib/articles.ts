@@ -14,7 +14,7 @@ const SELECT_WITH_AUTHOR = "*, author:contributor_id(display_name, bio)";
 // Omits `body` (full article text, only needed on the article page and the
 // editor review queue) so list responses stay small and fast.
 const LIST_SELECT =
-  "id, source_type, status, title, slug, excerpt, external_url, image_url, " +
+  "id, source_type, status, title, slug, excerpt, summary_points, external_url, image_url, " +
   "category_slug, region_slug, score, source_name, contributor_id, " +
   "published_at, created_at, updated_at, author:contributor_id(display_name, bio)";
 

@@ -11,6 +11,9 @@ export type Article = {
   title: string;
   slug: string;
   excerpt: string | null;
+  // "Pokok Berita": 1-3 poin ringkas dari scripts/ringkas.py (RSS saja).
+  // null = belum diproses, [] = tidak ada poin layak -> pakai excerpt.
+  summary_points?: string[] | null;
   body: string | null;
   external_url: string | null;
   image_url: string | null;

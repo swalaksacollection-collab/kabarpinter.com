@@ -3,6 +3,7 @@ import { getPublishedArticles } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { LiveWidget } from "@/components/LiveWidget";
+import { PokokBerita } from "@/components/PokokBerita";
 import { categoryLabel } from "@/lib/categories";
 import type { Article } from "@/lib/types";
 
@@ -56,7 +57,11 @@ function LeadStory({ article }: { article: Article }) {
           <span className="story__viral">🔥 Viral Score {article.score}</span>
         </div>
         <h1 className="story__headline">{article.title}</h1>
-        {article.excerpt && <p className="story__excerpt">{article.excerpt}</p>}
+        <PokokBerita
+          points={article.summary_points}
+          excerpt={article.excerpt}
+          className="story__excerpt"
+        />
       </Link>
     </article>
   );

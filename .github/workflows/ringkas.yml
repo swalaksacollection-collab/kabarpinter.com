@@ -1,0 +1,33 @@
+name: Ringkas berita (Pokok Berita)
+
+# Menjalankan scripts/ringkas.py: menyusun 1-3 poin ringkas dari cuplikan RSS
+# untuk artikel yang belum diringkas. Jadwal sedikit setelah cron fetch-rss
+# (*/30) supaya berita baru langsung ikut diproses.
+on:
+  schedule:
+    - cron: "10,40 * * * *"
+  workflow_dispatch:
+    inputs:
+      semua:
+        description: "Ringkas ulang SEMUA artikel RSS (setelah aturan diubah)"
+        type: boolean
+        default: false
+
+jobs:
+  ringkas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tes aturan ringkasan
+        run: python -m unittest test_ringkas
+        working-directory: scripts
+      - name: Ringkas artikel
+        run: python ringkas.py ${{ inputs.semua && '--semua' || '' }}
+        working-directory: scripts
+        env:
+          SUPABASE_URL: https://nkkkzkteyrelxcnsvyif.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
