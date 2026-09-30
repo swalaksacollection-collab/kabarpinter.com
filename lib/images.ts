@@ -84,8 +84,11 @@ export function imageSrcSet(url: string | null | undefined): string | undefined 
 
 // `sizes` hints so the browser knows how wide the image is actually shown.
 // Keep in step with the layout CSS (card grid / hero column / article column).
+//   card    phones: 112px thumbnail in a row; 641-760: 2 columns; 761-1024: 3 columns
+//   hero    homepage lead story (full width on small screens, ~700px column on desktop)
+//   article article page photo
 export const IMAGE_SIZES = {
-  card: "(max-width: 640px) 100vw, 400px",
+  card: "(max-width: 640px) 112px, (max-width: 760px) 46vw, (max-width: 1024px) 30vw, 390px",
   hero: "(max-width: 900px) 100vw, 700px",
-  article: "(max-width: 800px) 100vw, 760px",
+  article: "(max-width: 740px) 100vw, 700px",
 } as const;

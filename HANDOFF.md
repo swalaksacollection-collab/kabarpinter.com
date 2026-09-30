@@ -1,7 +1,8 @@
 # Kabarpinter.com — Handoff
 
-Last updated: 2026-09-30 (end of this session). Everything below reflects
-the live, deployed state at that point — not a plan.
+Last updated: 2026-10-01. Everything below reflects the live, deployed
+state at that point — not a plan. (Sections marked UPDATED 10-01 were
+rewritten after the move to the `swalaksacollection` Vercel team.)
 
 ## What this project is
 
@@ -17,49 +18,65 @@ kabarpinter.com), rebranded, then redesigned twice (first to match the
 old site's look, then to a detik.com-style structure — see git log for
 that history if it matters).
 
-## Infrastructure (all separate/new accounts, not mixed with anything else)
+## Infrastructure (UPDATED 10-01)
 
-| Service | ID / identifier | Notes |
+| Service | Identifier | Notes |
 |---|---|---|
-| GitHub | `swalaksacollection-collab/kabarpinter.com`, branch `main` | Push access via a username-scoped remote URL (kept separate from the user's other GitHub credential) |
-| Vercel | project `prj_cOZnwiuEYh0CUclslAOCHi2jXtH4` ("kabarpinter-web") | Domain `kabarpinter.com` is production, DNS verified, SSL active |
-| Supabase | project `nkkkzkteyrelxcnsvyif` | `https://nkkkzkteyrelxcnsvyif.supabase.co` |
-| Local repo | `C:\KABARPINTER.COM` | Working directory for all edits |
+| GitHub | `swalaksacollection-collab/kabarpinter.com`, branch `main` | personal account |
+| Vercel | team **`swalaksacollection`** (Hobby), project **`kabarpinter-com`** | serves `kabarpinter.com`; **git-integrated: every push to `main` auto-deploys** (~1-3 min) |
+| Supabase | project `nkkkzkteyrelxcnsvyif`, region `ap-southeast-1` (Singapore) | org "swalaksacollection-collab's Org" |
+| DNS | Hostinger hPanel (nameservers `*.dns-parking.com`) | apex A `76.76.21.21`, `www` CNAME `cname.vercel-dns.com`, TXT `_vercel` (domain-ownership proof, may stay) |
+| Local repo | `C:\KABARPINTER.COM` | working directory for all edits |
 
-**Deploy is NOT git-integrated auto-deploy** — direct Vercel git-linking
-hit a `repo_no_access` error early on, so every deploy in this session
-was done manually via the Vercel MCP `create_deployment` tool with an
-explicit `gitSource: {type: "github", org: "swalaksacollection-collab",
-repo: "kabarpinter.com", ref: "main"}` (no `sha` — it resolves latest
-commit on the branch). **After pushing to GitHub, you must still call
-`create_deployment` to actually deploy** — pushing alone does nothing.
+- **Functions run in `sin1`** (Singapore, next to Supabase) via `vercel.json`.
+  Before this they ran in `iad1` (US) and every page took 1.4-3 s.
+- **Old project**: an earlier Vercel project `kabarpinter-web` lives in a
+  *different* Vercel account (scope `prastowo`). It no longer serves the
+  domain. The Claude **Vercel connector/MCP is authenticated to that old
+  account**, so `create_deployment` etc. cannot see or deploy the current
+  project - just `git push`. (Reconnect the connector with
+  `swalaksacollection@gmail.com` if MCP access is wanted.)
+- **Auth email**: Supabase's built-in SMTP only delivers to members of the
+  Supabase organization (others get "Email address not authorized") and the
+  email templates are **not editable until a custom SMTP server is set up**.
+  Until then only the owner can log in. Login uses `/auth/callback` (PKCE:
+  the link must be opened in the *same browser* that requested it). After
+  custom SMTP, switch the Magic Link + Confirm-signup templates to
+  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+  (route already exists; works across browsers/phones).
+- Supabase Auth -> URL Configuration: Site URL `https://kabarpinter.com`,
+  redirect allow-list `https://kabarpinter.com/**`.
 
-## Standard change workflow (used consistently all session)
+## Standard change workflow (UPDATED 10-01)
 
 1. Edit code.
-2. `cd "C:/KABARPINTER.COM" && npx vitest run` (TDD — RED before GREEN
-   for any testable logic change in `lib/*.ts` or
-   `supabase/functions/fetch-rss/parse.ts`)
-3. `npx tsc --noEmit`
-4. `npm run build`
-5. Visual check via the Browser pane (`preview_start` with launch.json
-   config name `kabarpinter-web` — see note below) before deploying.
-6. `git add -A && git commit -m "..." && git push origin main`
-7. Vercel `create_deployment` (see above) → poll `get_deployment` until
-   `readyState: "READY"`.
-8. Spot-check the live site with `curl` or the browser.
+2. `cd "C:/KABARPINTER.COM" && npx vitest run` - **TDD**: write the test,
+   watch it fail for the right reason (RED), then implement (GREEN), for any
+   logic in `lib/*.ts` or `supabase/functions/fetch-rss/parse.ts`.
+3. `npx tsc --noEmit` and `npx eslint app components lib` (must be 0 errors).
+4. Verify the real build. **If another session's dev server is running in
+   this folder, do NOT run `npm run build` here** - it overwrites the shared
+   `.next` and breaks that dev server (this happened: HTTP 500 "Module not
+   found ... turbopack-next/internal/font/google/font"). Instead copy the
+   project (without `.next`/`.git`, with a *real copy* of `node_modules` -
+   Turbopack rejects a junction/symlinked `node_modules`) to a scratch dir,
+   build there, inspect `.next/server/app/*.html`, then delete the copy.
+5. `git fetch origin` (other sessions push to `main` too) ->
+   `git pull --rebase --autostash origin main` if behind -> commit -> push.
+6. **Push = deploy.** Poll the live site until the change appears (e.g. a
+   new route stops returning 404), then verify with `curl`/browser: status,
+   `x-vercel-cache`, TTFB and the actual content.
+7. State plainly what was measured and what was *not* verified.
 
-**launch.json quirk**: the Claude Code session's primary working
-directory for this project was `C:\KABARKINI.ONLINE` (a *different*,
-unrelated legacy folder), not `C:\KABARPINTER.COM`. The Browser pane's
-`preview_start` tool reads `.claude/launch.json` from the *primary*
-working directory, so a launch.json was created at
-`C:\KABARKINI.ONLINE\.claude\launch.json` with:
+**launch.json quirk**: the Claude Code session's primary working directory
+can be `C:\KABARKINI.ONLINE` (a different legacy folder). The Browser pane's
+`preview_start` reads `.claude/launch.json` from the *primary* working
+directory, so one exists at `C:\KABARKINI.ONLINE\.claude\launch.json`:
 ```json
 { "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "C:/KABARPINTER.COM", "run", "dev"], "port": 3000 }
 ```
-If a future session's working directory differs, recreate this file
-(or an equivalent) pointing `--prefix` at `C:/KABARPINTER.COM`.
+Port 3000 may already be taken by another session's dev server - don't stop
+it; `curl` it or test in an isolated copy.
 
 ## Content pipeline
 
@@ -100,49 +117,45 @@ sulsel (ANTARA's bureau there is branded "Makassar", not "Sulsel" —
 ANTARA regional-bureau RSS source. `/daerah` (all regions blended) and
 `/daerah/[slug]` (one region) both exist.
 
-## The "Ulasan Pakar" (expert contributor) pipeline
+## The "Ulasan Pakar" / contributor pipeline (UPDATED 10-01)
 
-This was **half-built from the original plan** — auth (Supabase magic
-link) and DB schema/RLS existed, but the actual dashboard and review
-queue were literal placeholder pages ("coming in a future iteration").
-Built out this session:
+**Flow**: anyone can sign in (magic link) -> must submit a full application
+(real name, phone, city, profession, institution, bio, optional link,
+**selfie from the phone camera**) -> an **admin** approves or rejects it
+(rejection needs a reason, shown to the applicant) -> a rejected applicant
+fixes the data and **re-submits** -> only **approved** contributors can submit
+articles -> an editor/admin reviews each article (publish / reject + note).
 
-- `/kontributor/masuk` — magic-link login (no password)
-- `/kontributor/dashboard` — edit profile (display_name + bio =
-  credential, e.g. "dr. Andi Wijaya, Sp.PD"), submit new article (title,
-  category, excerpt, body, image upload to a `contributor-uploads`
-  Supabase Storage bucket), see own submissions + status
-- `/redaksi/review` — **editor-only**. Lists `status='submitted'`
-  articles, Terbitkan (publish)/Tolak (reject+note) via Server Actions
-- `/opini` — public landing page, all published contributor pieces
-  across every category (mirrors `/daerah`'s cross-cutting pattern)
-- Contributor-authored articles get a red "✍️ Ulasan Pakar" badge and
-  show the author's real `display_name`/`bio` (joined via
-  `contributor_id → profiles`) instead of the generic RSS `source_name`
-- Daily Brief (`/daily-brief`) shows the single latest published
-  opinion piece in a highlighted callout **above** the regular top-5
-  news grid
-- Opinion pieces are excluded from the homepage's main hero (lead/side)
-  slot on purpose — that's reserved for photo breaking-news; they still
-  show in the regular grid, their category page, `/opini`, and Daily
-  Brief
-
-**⚠️ Not yet usable end-to-end**: nobody has `role='editor'` yet — there
-is intentionally no self-service "become editor" UI (security). **Next
-step, waiting on the user**: they need to (1) sign in once at
-`/kontributor/masuk` with whichever email should be the editor, then
-(2) tell the next session that email so it can run:
-```sql
-update profiles set role = 'editor' where id = (select id from auth.users where email = '<email>');
-```
-
-One demo article already exists to populate the empty Daily
-Brief/opini slot: *"Menjaga Keseimbangan Kekuasaan: Kenapa Checks and
-Balances Masih Relevan"*, attributed to **"Redaksi Kabarpinter.com"**
-(source_name, not a fake named contributor — inventing a fictitious
-credentialed doctor/professor for a live public site would mislead
-readers). `contributor_id` is null on this one row; a real submission
-would have it set and show that person's own byline instead.
+- Roles in `profiles.role`: `contributor`, `editor`, `admin` (super admin).
+  `is_editor()` is true for editor **and** admin. The owner account
+  `swalaksacollection@gmail.com` is `admin` (display name "Redaksi
+  Kabarpinter.com"). There is deliberately no self-service "become admin".
+  To promote someone (after they have logged in once):
+  `update profiles set role='admin', application_status='approved' where id=(select id from auth.users where email='<email>');`
+- **Data model** (migrations `0014`, `0015`): PII lives in
+  `contributor_applications` (owner + admin only; anon has no privileges at
+  all). `profiles` holds role + `application_status`
+  (`none|pending|approved|rejected`) + reason/dates, and clients cannot write
+  it at all. Status changes only happen through the SECURITY DEFINER functions
+  `submit_contributor_application()` and `review_contributor_application()`.
+  Approval copies `display_name`/`bio` into `profiles` (the public byline).
+  Anon may read only `id, display_name, bio` of *approved* profiles (column
+  grant) - this is what makes "Ulasan Pakar" bylines render for readers.
+- **Selfie**: private Storage bucket `contributor-verification` (path
+  `<uid>/selfie.jpg`); the owner may upload/replace only while the application
+  is open (`none`/`rejected`); admin reads via a short-lived signed URL.
+  Resized to <=1280px JPEG in the browser before upload.
+- Pages: `/kontributor/masuk` (login), `/kontributor/dashboard` (shows the
+  state: apply / pending / rejected+resubmit / approved -> write articles),
+  `/redaksi/pelamar` (**admin**: approve/reject with reason + history),
+  `/redaksi/review` (editor/admin: publish/reject articles), `/opini`
+  (public landing); Daily Brief highlights the latest opinion piece.
+- `proxy.ts` refreshes the Supabase session **only** on `/kontributor/*`,
+  `/redaksi/*` sub-pages and `/auth/*` - never mount it on public pages.
+- Opinion pieces are excluded from the homepage hero slot on purpose.
+- One demo article ("Menjaga Keseimbangan Kekuasaan...") is attributed to
+  "Redaksi Kabarpinter.com" via `source_name` (`contributor_id` is null) - no
+  fictitious credentialed author was invented.
 
 ## Design system
 
@@ -185,21 +198,53 @@ all zero-copyright-risk ways to make the site feel less like a bare
 aggregator. If a future session is asked to scrape full article bodies
 from other outlets, raise the same concern again before doing it.
 
-## Known gaps / possible next steps (not started)
+## Known gaps / possible next steps (UPDATED 10-01)
 
-- No editor promoted yet (see above — blocks actually testing
-  publish/reject).
-- `PinterClip` (ex-`20detik`, short-video vertical) has no real content
-  source — no RSS feed suits video content in the current text-based
-  `parseFeedXml` (which only understands RSS `<item>`, not Atom
-  `<entry>` — a YouTube channel feed would need parser work).
-  `jateng` region also currently has 0 articles (not an error, just
-  hasn't had an item score ≥40 yet — should self-resolve over time).
-- No rich-text editor for contributor submissions — plain textarea,
-  paragraphs split on blank lines. Fine for now; revisit if pakar
-  complain about formatting.
-- No image for the demo "Redaksi" opinion piece (didn't want to attach
-  an uncredited stock photo).
+- **Custom SMTP** (Resend/Brevo/...): required before any contributor other
+  than the owner can receive a login link. Then switch the email templates to
+  `/auth/confirm` (see Infrastructure).
+- **Tribunnews images stay blurry** (~20% of images, the largest source): RSS
+  only exposes a signed 148x99 q30 thumbnail and any URL change -> HTTP 400.
+  Options: fetch `og:image` (1200x675) from the article page at ingestion
+  (filter out logo placeholders; some are q30 too), or show Tribun cards
+  without a photo. Liputan6/kly URLs are signed as well (673x379, left as is).
+- **Editor tools (Phase B)**: an editor sees only the first 400 chars of a
+  submission; cannot edit before publishing, unpublish a live article, or
+  hide/delete a bad RSS article; RSS sources and users can only be managed via
+  SQL. Contributors cannot save drafts, edit, or re-submit a *rejected
+  article* (RLS locks rejected rows; only rejected *applications* can be
+  re-submitted).
+- No verification of credentials beyond the admin's review of the application.
+- `PinterClip` (ex-`20detik`) has no content source (the parser only handles
+  RSS `<item>`, not Atom `<entry>`); `jateng` may be empty until an item
+  scores >=40.
+- Plain-textarea article editor (paragraphs split on blank lines).
+- Vercel **Hobby** is non-commercial; the site has ad/sponsorship pages, so
+  plan to move to Pro once revenue starts.
+- `@vercel/analytics` is installed, but the owner must click **Enable** in the
+  Vercel project's Analytics tab before any data appears.
+- Not yet verified by a real user: the application form UI and the phone
+  selfie flow (the form is behind login).
+
+## Conventions / standing rules from the owner (NEW 10-01)
+
+- **Every image goes through `lib/images.ts`** ("untuk ke depan begitu
+  semua"): `upgradeImageUrl()` for `src`, `imageSrcSet()` + `IMAGE_SIZES` for
+  `srcSet`/`sizes`, so each screen density gets a genuinely sharper photo
+  without over-downloading. Only request sizes a CDN was *probed* to serve
+  (ANTARA 800/1200 only; detik 360/720/1080/1440). **Never rewrite signed CDN
+  URLs** (Tribunnews, Liputan6/kly). Keep `IMAGE_SIZES` in step with the
+  layout CSS (cards are 112px thumbnails on phones, 2-3 columns above).
+  Verify in a browser by reading `img.currentSrc` - *not* `naturalWidth`
+  (browsers rescale it for `w`-descriptor srcsets).
+- Public pages use the cookie-free `createPublicClient()`
+  (`lib/supabase/public.ts`) so they stay static/ISR; only session-dependent
+  code uses `createServerClient()`. Any `cookies()` call makes a route dynamic
+  and slow again.
+- Internal links use `next/link` (client-side navigation), never `<a>`.
+- Measure, don't assume (curl TTFB + `x-vercel-cache`, image dimensions via
+  download). Report what was not verified.
+- Do not scrape/republish full copyrighted article bodies (see stance above).
 
 ## Quick reference: where things live
 
@@ -209,8 +254,13 @@ from other outlets, raise the same concern again before doing it.
 | Category display names | `lib/categories.ts` |
 | Region display names | `lib/regions.ts` |
 | Article queries (all pages read through this) | `lib/articles.ts` |
+| Image URL upgrade + srcset | `lib/images.ts` (+ `images.test.ts`) |
+| SEO helpers / site constants | `lib/seo.ts`, `lib/site.ts`; `app/sitemap.ts`, `app/robots.ts` |
+| Application validation + safe redirect | `lib/application.ts` |
+| Auth plumbing | `proxy.ts`, `lib/supabase/{server,client,public,proxy}.ts`, `app/auth/{callback,confirm}/route.ts` |
 | Nav + sliding indicator | `components/NavBar.tsx` |
 | Contributor submission form | `components/contributor/ArticleForm.tsx` |
 | Editor review queue | `app/redaksi/review/page.tsx` |
+| Admin: contributor applications | `app/redaksi/pelamar/page.tsx`, `components/contributor/ApplicationForm.tsx` |
 | All design tokens/CSS | `app/globals.css` (single file, no CSS modules) |
-| DB migrations, in order | `supabase/migrations/0001..0013_*.sql` |
+| DB migrations, in order | `supabase/migrations/0001..0016_*.sql` (0014/0015 = applications; 0016 = Pokok Berita summaries) |
