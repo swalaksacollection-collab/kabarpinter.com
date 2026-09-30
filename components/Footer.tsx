@@ -16,11 +16,11 @@ export function Footer() {
           <div>
             <h4>Kategori</h4>
             <ul>
-              <li><a href="/kategori/news">detikNews</a></li>
-              <li><a href="/kategori/finance">detikFinance</a></li>
-              <li><a href="/kategori/hot">detikHot</a></li>
-              <li><a href="/kategori/sport">detikSport</a></li>
-              <li><a href="/kategori/wolipop">Wolipop</a></li>
+              <li><a href="/kategori/news">PinterNews</a></li>
+              <li><a href="/kategori/finance">PinterFinance</a></li>
+              <li><a href="/kategori/hot">PinterHot</a></li>
+              <li><a href="/kategori/sport">PinterSport</a></li>
+              <li><a href="/kategori/wolipop">PinterStyle</a></li>
             </ul>
           </div>
           <div>

@@ -2,17 +2,17 @@
 // Kept here too so card components can show a proper label without an
 // extra query per card.
 export const CATEGORY_LABELS: Record<string, string> = {
-  news: "detikNews",
-  finance: "detikFinance",
-  hot: "detikHot",
-  inet: "detikInet",
-  sport: "detikSport",
-  oto: "detikOto",
-  travel: "detikTravel",
-  food: "detikFood",
-  health: "detikHealth",
-  wolipop: "Wolipop",
-  "20detik": "20detik",
+  news: "PinterNews",
+  finance: "PinterFinance",
+  hot: "PinterHot",
+  inet: "PinterInet",
+  sport: "PinterSport",
+  oto: "PinterOto",
+  travel: "PinterTravel",
+  food: "PinterFood",
+  health: "PinterHealth",
+  wolipop: "PinterStyle",
+  "20detik": "PinterClip",
 };
 
 export function categoryLabel(slug: string | null): string {

@@ -4,21 +4,21 @@ import { getPublishedArticles } from "@/lib/articles";
 const NAV = [
   { href: "/", label: "Beranda" },
   { href: "/daily-brief", label: "📋 Daily Brief", accent: true },
-  { href: "/kategori/news", label: "detikNews" },
-  { href: "/kategori/finance", label: "detikFinance" },
-  { href: "/kategori/hot", label: "detikHot" },
-  { href: "/kategori/inet", label: "detikInet" },
-  { href: "/kategori/sport", label: "detikSport" },
-  { href: "/kategori/oto", label: "detikOto" },
-  { href: "/kategori/travel", label: "detikTravel" },
-  { href: "/kategori/food", label: "detikFood" },
-  { href: "/kategori/health", label: "detikHealth" },
-  { href: "/kategori/wolipop", label: "Wolipop" },
-  { href: "/kategori/20detik", label: "20detik" },
+  { href: "/kategori/news", label: "PinterNews" },
+  { href: "/kategori/finance", label: "PinterFinance" },
+  { href: "/kategori/hot", label: "PinterHot" },
+  { href: "/kategori/inet", label: "PinterInet" },
+  { href: "/kategori/sport", label: "PinterSport" },
+  { href: "/kategori/oto", label: "PinterOto" },
+  { href: "/kategori/travel", label: "PinterTravel" },
+  { href: "/kategori/food", label: "PinterFood" },
+  { href: "/kategori/health", label: "PinterHealth" },
+  { href: "/kategori/wolipop", label: "PinterStyle" },
+  { href: "/kategori/20detik", label: "PinterClip" },
 ];
 
-// Decorative only, matching detik.com's "Daerah" nav item — this project
-// has no real per-region content or filtering behind it.
+// Decorative only ("Daerah" region filter) — this project has no real
+// per-region content or filtering behind it.
 const DAERAH = ["Jabar", "Jateng", "Jatim", "Sumut", "Sulsel", "Bali"];
 
 const DAYS = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
@@ -75,7 +75,7 @@ export async function Header() {
               <path d="m21 21-4.3-4.3" />
             </svg>
           </Link>
-          <Link href="/kontributor/masuk" className="icon-btn" style={{ width: "auto", borderRadius: "999px", padding: "0 16px", fontSize: "13px", fontWeight: 600 }}>
+          <Link href="/kontributor/masuk" className="btn-outline">
             Daftar
           </Link>
           <Link href="/kontributor/masuk" className="btn-primary">

@@ -62,9 +62,10 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body {
   margin: 0;
+  overflow-x: hidden;
   font-family: var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
   line-height: 1.6;
@@ -188,6 +189,17 @@ h1, h2, h3, h4 {
   font-weight: 600;
 }
 .btn-primary:hover { background: var(--red); }
+.btn-outline {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  padding: 0 16px;
+  height: 38px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--paper-warm);
+  color: var(--ink);
+  white-space: nowrap;
+}
 
 /* detik.com-style solid-color nav bar (its own brand blue), replacing
    the original site's transparent-bg + red-underline nav treatment. */
@@ -506,12 +518,24 @@ h1, h2, h3, h4 {
 }
 @media (max-width: 640px) {
   .masthead__top {
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "brand actions" "date date";
+    grid-template-columns: 1fr;
+    grid-template-areas: "brand" "actions" "date";
+    padding: 14px 16px;
+    gap: 10px;
   }
   .masthead__date { grid-area: date; flex-direction: row; gap: 8px; }
   .masthead__brand { grid-area: brand; text-align: left; }
-  .masthead__actions { grid-area: actions; }
+  .logo { font-size: 26px; }
+  .masthead__tagline { font-size: 9px; letter-spacing: 0.15em; margin-top: 4px; }
+  .masthead__actions {
+    grid-area: actions;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .icon-btn { width: 34px; height: 34px; flex-shrink: 0; }
+  .btn-outline { height: 34px; padding: 0 13px; font-size: 12px; }
+  .btn-primary { padding: 0 16px; height: 34px; font-size: 12px; display: flex; align-items: center; }
   .story-grid { grid-template-columns: 1fr; }
   .footer__grid { grid-template-columns: 1fr; }
 }
