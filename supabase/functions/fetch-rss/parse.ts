@@ -38,7 +38,10 @@ function extractExcerpt(block: string): string | null {
     .replace(/\s+/g, " ")
     .trim();
   if (!plainText) return null;
-  return plainText.split(" ").slice(0, 30).join(" ");
+  // Fuller than a bare teaser (was 30 words) so the site shows more of
+  // the source's own short RSS summary before sending readers onward -
+  // still just their existing description text, not scraped full body.
+  return plainText.split(" ").slice(0, 70).join(" ");
 }
 
 export function parseFeedXml(xml: string): FeedItem[] {

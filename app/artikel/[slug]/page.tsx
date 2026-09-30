@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getArticleBySlug } from "@/lib/articles";
+import { getArticleBySlug, getArticlesByCategory } from "@/lib/articles";
+import { ArticleCard } from "@/components/ArticleCard";
 import { categoryLabel } from "@/lib/categories";
 import { fullDateTime } from "@/lib/date";
 import { ShareButtons } from "@/components/ShareButtons";
@@ -15,6 +16,12 @@ export default async function ArticlePage({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
+
+  const related = article.category_slug
+    ? (await getArticlesByCategory(article.category_slug))
+        .filter((a) => a.id !== article.id)
+        .slice(0, 4)
+    : [];
 
   return (
     <main className="section">
@@ -71,16 +78,30 @@ export default async function ArticlePage({
           )}
 
           {article.external_url && (
-            <a
-              href={article.external_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="article__source-link"
-            >
-              Baca artikel lengkap di {article.source_name ?? "sumber asli"} →
-            </a>
+            <p className="article__source-note">
+              Sumber:{" "}
+              <a href={article.external_url} target="_blank" rel="noopener noreferrer">
+                {article.source_name ?? "sumber asli"} →
+              </a>
+            </p>
           )}
         </article>
+
+        {related.length > 0 && (
+          <section className="article__related">
+            <div className="section__head">
+              <h2 className="section__title">
+                <span className="section__rule" />
+                Berita Terkait
+              </h2>
+            </div>
+            <div className="story-grid">
+              {related.map((a) => (
+                <ArticleCard key={a.id} article={a} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

@@ -594,19 +594,18 @@ h1, h2, h3, h4 {
 }
 .article__body { font-size: 17px; line-height: 1.8; color: var(--ink); }
 .article__body p { margin: 0 0 20px; }
-.article__source-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 12px 22px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
-  font-weight: 600;
-  font-size: 14px;
+/* A citation, not a "go elsewhere" CTA - the article's own excerpt is
+   the main content of the page, this is just proper attribution. */
+.article__source-note {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--paper-line);
+  font-size: 13px;
+  color: var(--ink-mute);
 }
-.article__source-link:hover { background: var(--red); }
+.article__source-note a { color: var(--red); font-weight: 600; }
+.article__source-note a:hover { text-decoration: underline; }
+.article__related { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--paper-line); }
 
 /* ============================================
    FOOTER

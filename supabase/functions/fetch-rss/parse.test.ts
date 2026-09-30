@@ -39,8 +39,8 @@ describe("parseFeedXml", () => {
     expect(items[1].link).toBe("https://b.com/2");
   });
 
-  it("extracts a plain-text excerpt from an HTML description, truncated to ~30 words", () => {
-    const words = Array.from({ length: 40 }, (_, i) => `kata${i}`).join(" ");
+  it("extracts a plain-text excerpt from an HTML description, truncated to ~70 words", () => {
+    const words = Array.from({ length: 90 }, (_, i) => `kata${i}`).join(" ");
     const xml = `<?xml version="1.0"?>
       <rss><channel>
         <item>
@@ -52,7 +52,7 @@ describe("parseFeedXml", () => {
     const items = parseFeedXml(xml);
     expect(items[0].excerpt).not.toBeNull();
     expect(items[0].excerpt).not.toContain("<img");
-    expect(items[0].excerpt!.split(/\s+/).length).toBeLessThanOrEqual(30);
+    expect(items[0].excerpt!.split(/\s+/).length).toBe(70);
     expect(items[0].excerpt!.startsWith("kata0")).toBe(true);
   });
 
