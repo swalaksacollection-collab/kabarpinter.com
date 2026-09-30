@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTopArticles } from "@/lib/articles";
 import { NavBar } from "@/components/NavBar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { dayName, fullDate } from "@/lib/date";
 import type { Article } from "@/lib/types";
 
@@ -60,6 +61,7 @@ export async function Header() {
               <path d="m21 21-4.3-4.3" />
             </svg>
           </Link>
+          <ThemeToggle />
           <Link href="/kontributor/masuk" className="btn-outline">
             Daftar
           </Link>
