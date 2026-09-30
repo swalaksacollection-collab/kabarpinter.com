@@ -1,16 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArticleBySlug } from "@/lib/articles";
 import { categoryLabel } from "@/lib/categories";
+import { fullDateTime } from "@/lib/date";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export const revalidate = 60;
-
-function timeAgo(iso: string | null): string {
-  if (!iso) return "";
-  const hours = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 3_600_000));
-  if (hours < 1) return "Baru saja";
-  if (hours < 24) return `${hours} jam lalu`;
-  return `${Math.round(hours / 24)} hari lalu`;
-}
 
 export default async function ArticlePage({
   params,
@@ -25,23 +20,41 @@ export default async function ArticlePage({
     <main className="section">
       <div className="container">
         <article className="article">
-          {article.category_slug && (
-            <span className={`story__badge story__badge--${article.category_slug}`}>
-              {categoryLabel(article.category_slug)}
-            </span>
-          )}
+          <nav className="article__breadcrumb" aria-label="Breadcrumb">
+            <Link href="/">Beranda</Link>
+            <span>›</span>
+            {article.category_slug ? (
+              <Link href={`/kategori/${article.category_slug}`}>
+                {categoryLabel(article.category_slug)}
+              </Link>
+            ) : (
+              <span>Umum</span>
+            )}
+          </nav>
+
           <h1 className="article__headline">{article.title}</h1>
+
           <div className="article__meta">
+            <span className="article__meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M16 2v4M8 2v4M3 10h18" />
+              </svg>
+              {fullDateTime(article.published_at)}
+            </span>
             <span className="story__source">{article.source_name ?? "Kontributor"}</span>
-            <span>•</span>
-            <span>{timeAgo(article.published_at)}</span>
           </div>
 
+          <ShareButtons title={article.title} path={`/artikel/${article.slug}`} />
+
           {article.image_url && (
-            <div className="article__media">
+            <figure className="article__media">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={article.image_url} alt="" />
-            </div>
+              {article.source_name && (
+                <figcaption>Foto: {article.source_name}</figcaption>
+              )}
+            </figure>
           )}
 
           {article.excerpt && <p className="article__lede">{article.excerpt}</p>}
@@ -64,7 +77,7 @@ export default async function ArticlePage({
               rel="noopener noreferrer"
               className="article__source-link"
             >
-              Baca artikel lengkap di sumber asli →
+              Baca artikel lengkap di {article.source_name ?? "sumber asli"} →
             </a>
           )}
         </article>

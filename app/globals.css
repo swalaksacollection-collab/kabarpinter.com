@@ -524,34 +524,68 @@ h1, h2, h3, h4 {
 
 /* ============================================
    ARTICLE DETAIL
+   Layout/typography/share-row modeled on ANTARA's own article pages
+   (breadcrumb, sans-serif headline, date-with-icon, colored share
+   buttons) per explicit request to match that look.
    ============================================ */
 .article { max-width: 700px; margin: 0 auto; }
+.article__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-mute);
+  margin-bottom: 14px;
+}
+.article__breadcrumb a:hover { color: var(--red); }
 .article__headline {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-body), sans-serif;
   font-weight: 800;
   font-size: clamp(24px, 3vw, 34px);
-  line-height: 1.2;
+  line-height: 1.25;
   letter-spacing: -0.01em;
-  margin: 14px 0 12px;
+  margin: 0 0 14px;
 }
 .article__meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono), monospace;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
   color: var(--ink-mute);
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
+.article__meta-item { display: inline-flex; align-items: center; gap: 6px; }
+.share-buttons { display: flex; gap: 10px; margin-bottom: 26px; }
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.share-btn:hover { opacity: 0.88; }
+.share-btn--whatsapp { background: #25d366; }
+.share-btn--facebook { background: #1877f2; }
+.share-btn--messenger { background: #00b2ff; }
+.share-btn--x { background: #000; }
+.share-btn--telegram { background: #29a9eb; }
+.share-btn--copy { background: var(--ink-soft); border: none; cursor: pointer; }
 .article__media {
   border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   background: var(--paper-warm);
 }
 .article__media img { width: 100%; display: block; }
+.article__media figcaption {
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin: 8px 0 24px;
+}
 .article__lede {
   font-size: 18px;
   line-height: 1.55;

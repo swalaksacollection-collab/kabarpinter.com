@@ -1,20 +1,8 @@
 import Link from "next/link";
 import { getTopArticles } from "@/lib/articles";
 import { NavBar } from "@/components/NavBar";
+import { dayName, fullDate } from "@/lib/date";
 import type { Article } from "@/lib/types";
-
-const DAYS = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
-const MONTHS = [
-  "JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI",
-  "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER",
-];
-
-function formatDate(d: Date) {
-  return {
-    day: DAYS[d.getDay()],
-    full: `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
-  };
-}
 
 function tickerSpans(articles: Article[], keyPrefix: string) {
   return articles.map((a) => (
@@ -26,7 +14,9 @@ function tickerSpans(articles: Article[], keyPrefix: string) {
 }
 
 export async function Header() {
-  const { day, full } = formatDate(new Date());
+  const now = new Date();
+  const day = dayName(now).toUpperCase();
+  const full = fullDate(now).toUpperCase();
   // "Today's most important stories" for the breaking-news ticker: ranked
   // by viral score (not just latest), within the last 48h.
   const tickerArticles = await getTopArticles(8).catch(() => []);
