@@ -86,10 +86,10 @@
   --paper-line: #2b2825;
   --line: #3a3632;
 
-  --red: #f0637f;
-  --red-deep: #ffb3c1;
+  --red: #b91d3f;
+  --red-deep: #f87171;
   --red-soft: #3a1820;
-  --on-red: #121110;
+  --on-red: #ffffff;
 
   --yellow: #f5c518;
   --yellow-soft: #3a3016;
@@ -120,10 +120,10 @@
     --paper-warm: #1c1a18;
     --paper-line: #2b2825;
     --line: #3a3632;
-    --red: #f0637f;
-    --red-deep: #ffb3c1;
+    --red: #b91d3f;
+    --red-deep: #f87171;
     --red-soft: #3a1820;
-    --on-red: #121110;
+    --on-red: #ffffff;
     --yellow-soft: #3a3016;
     --detik-blue: #22306b;
     --detik-blue-deep: #1c2a5e;
