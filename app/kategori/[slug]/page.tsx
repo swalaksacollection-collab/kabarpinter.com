@@ -3,7 +3,7 @@ import { getArticlesByCategory } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
 import { createServerClient } from "@/lib/supabase/server";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 async function getCategory(slug: string) {
   const supabase = await createServerClient();

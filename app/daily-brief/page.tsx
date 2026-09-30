@@ -1,7 +1,7 @@
 import { getPublishedArticles } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function DailyBriefPage() {
   const articles = await getPublishedArticles(50);

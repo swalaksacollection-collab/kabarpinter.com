@@ -6,7 +6,7 @@ import { LiveWidget } from "@/components/LiveWidget";
 import { categoryLabel } from "@/lib/categories";
 import type { Article } from "@/lib/types";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "";
