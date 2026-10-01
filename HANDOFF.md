@@ -36,14 +36,31 @@ that history if it matters).
   account**, so `create_deployment` etc. cannot see or deploy the current
   project - just `git push`. (Reconnect the connector with
   `swalaksacollection@gmail.com` if MCP access is wanted.)
-- **Auth email**: Supabase's built-in SMTP only delivers to members of the
-  Supabase organization (others get "Email address not authorized") and the
-  email templates are **not editable until a custom SMTP server is set up**.
-  Until then only the owner can log in. Login uses `/auth/callback` (PKCE:
-  the link must be opened in the *same browser* that requested it). After
-  custom SMTP, switch the Magic Link + Confirm-signup templates to
-  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-  (route already exists; works across browsers/phones).
+- **Auth email (UPDATED 10-01): custom SMTP via Resend, configured but NOT yet
+  tested end-to-end.**
+  - Resend domain `mail.kabarpinter.com` (region Tokyo), status Verified.
+    DNS at Hostinger: TXT `resend._domainkey.mail` (DKIM), CNAME `rsend.mail`
+    and `send.mail` (SPF/bounce), TXT `_dmarc` (`v=DMARC1; p=none;`).
+  - Supabase Auth -> Emails -> SMTP Settings: sender `no-reply@mail.kabarpinter.com`
+    / "Kabarpinter.com", host `smtp.resend.com`, port `465`, user `resend`,
+    password = a Resend API key (Sending access, restricted to the domain). The
+    key lives only in Supabase - never commit it. Email rate limit is 30/hour
+    (raise in Auth -> Rate Limits when needed); min interval per user 60 s.
+  - The two templates **"Magic link or OTP"** and **"Confirm sign up"** both link
+    to `https://kabarpinter.com/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+    (domain hard-coded on purpose, not `{{ .SiteURL }}`). This works across
+    browsers/phones. The older PKCE route `/auth/callback` and the
+    `emailRedirectTo` in `LoginForm` are still in the code.
+  - **Rollback if login is broken**: press "Reset template" on both templates
+    -> Supabase default emails -> PKCE `/auth/callback` flow (works only when the
+    link is opened in the same browser that requested it). The existing admin
+    session cookie stays valid meanwhile.
+  - The owner deferred the end-to-end test. When testing: from a phone, request a
+    link with an email that is NOT `swalaksacollection@gmail.com`, tap the button
+    in the email, fill the application incl. selfie, then approve it at
+    `/redaksi/pelamar`. Resend "Logs" show delivery; check them if mail is missing.
+    After it works, update the notice text in `LoginForm` ("Buka di browser yang
+    sama" is now obsolete) and drop `emailRedirectTo` if desired.
 - Supabase Auth -> URL Configuration: Site URL `https://kabarpinter.com`,
   redirect allow-list `https://kabarpinter.com/**`.
 
@@ -200,9 +217,10 @@ from other outlets, raise the same concern again before doing it.
 
 ## Known gaps / possible next steps (UPDATED 10-01)
 
-- **Custom SMTP** (Resend/Brevo/...): required before any contributor other
-  than the owner can receive a login link. Then switch the email templates to
-  `/auth/confirm` (see Infrastructure).
+- **Pending test (owner deferred it)**: login through the new Resend templates
+  and the contributor application form from a phone (see Infrastructure ->
+  Auth email for the steps and the rollback). Until done, treat "other people
+  can become contributors" as unverified.
 - **Tribunnews: photos are hidden, and the text is an open legal question.**
   Tribunnews' terms of use (read 2026-10-01; not legal advice) say its content
   incl. photos is for personal, non-commercial use only, forbid robots/scripts
