@@ -2,6 +2,7 @@ import { cache } from "react";
 import { createServerClient } from "./supabase/server";
 import { createPublicClient } from "./supabase/public";
 import type { Article } from "./types";
+import { rankByCoverage } from "./trending";
 
 // Embeds the contributor's profile (display name + bio/credential) via
 // the articles.contributor_id -> profiles.id foreign key, so "Ulasan
@@ -41,19 +42,21 @@ export async function getPublishedArticles(limit = 30): Promise<Article[]> {
 // not just the latest ones. Ranks by score first (within a recent window
 // so a viral story from last week doesn't get stuck at the top forever),
 // falling back to recency to break ties.
-export async function getTopArticles(limit = 8, windowHours = 48): Promise<Article[]> {
+export async function getTopArticles(limit = 8, windowHours = 24): Promise<Article[]> {
   const supabase = createPublicClient();
   const since = new Date(Date.now() - windowHours * 3_600_000).toISOString();
+  // Pull a wide candidate pool, then rank by how many different outlets
+  // cover the same story (see lib/trending.ts) instead of keyword score.
   const { data, error } = await supabase
     .from("articles")
     .select(LIST_SELECT)
     .eq("status", "published")
     .gte("published_at", since)
-    .order("score", { ascending: false })
     .order("published_at", { ascending: false })
-    .limit(limit);
+    .limit(200);
   if (error) throw error;
-  return (data as unknown as Article[]) ?? [];
+  const pool = (data as unknown as Article[]) ?? [];
+  return rankByCoverage(pool, limit).map((s) => s.article);
 }
 
 export async function getArticlesByCategory(
