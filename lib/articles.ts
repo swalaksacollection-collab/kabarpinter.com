@@ -9,7 +9,7 @@ import { rankByCoverage } from "./trending";
 // Pakar" pieces can show a real byline ("dr. Andi, Sp.PD - Dokter
 // Spesialis...") instead of the generic source_name RSS articles use.
 // null for RSS articles (no contributor_id).
-const SELECT_WITH_AUTHOR = "*, author:contributor_id(display_name, bio)";
+const SELECT_WITH_AUTHOR = "*, author:contributor_id(display_name, bio, avatar_url)";
 
 // Lean column list for LIST views (home, category, region, search, ...).
 // Omits `body` (full article text, only needed on the article page and the
@@ -17,7 +17,7 @@ const SELECT_WITH_AUTHOR = "*, author:contributor_id(display_name, bio)";
 const LIST_SELECT =
   "id, source_type, status, title, slug, excerpt, summary_points, external_url, image_url, " +
   "category_slug, region_slug, score, source_name, contributor_id, " +
-  "published_at, created_at, updated_at, author:contributor_id(display_name, bio)";
+  "published_at, created_at, updated_at, author:contributor_id(display_name, bio, avatar_url)";
 
 // Default page size for category / region listings (previously unbounded).
 const LIST_PAGE_SIZE = 30;

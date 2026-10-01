@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { SitePopup } from "@/components/SitePopup";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import {
   SITE_URL,
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Footer />
         <Analytics />
         <InstallPrompt />
+        <SitePopup />
       </body>
     </html>
   );

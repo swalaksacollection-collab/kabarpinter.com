@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,6 +8,8 @@ import { categoryLabel } from "@/lib/categories";
 import { fullDateTime } from "@/lib/date";
 import { ShareButtons } from "@/components/ShareButtons";
 import { PokokBerita } from "@/components/PokokBerita";
+import { AdSlot } from "@/components/AdSlot";
+import { Avatar } from "@/components/Avatar";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
 import { upgradeImageUrl, imageSrcSet, isImageAllowed, IMAGE_SIZES } from "@/lib/images";
@@ -109,7 +112,10 @@ export default async function ArticlePage({
               </svg>
               {fullDateTime(article.published_at)}
             </span>
-            <span className="story__source">
+            <span className="story__source story__byline">
+              {article.author && (
+                <Avatar name={article.author.display_name} url={article.author.avatar_url} size={28} />
+              )}
               {article.author?.display_name ?? article.source_name ?? "Kontributor"}
             </span>
           </div>
@@ -150,7 +156,11 @@ export default async function ArticlePage({
                 .split("\n")
                 .filter((p) => p.trim().length > 0)
                 .map((paragraph, i) => (
-                  <p key={i}>{paragraph}</p>
+                  <Fragment key={i}>
+                    <p>{paragraph}</p>
+                    {/* One in-article ad after the 3rd paragraph, only on longer pieces. */}
+                    {i === 2 && <AdSlot slot="in_article" />}
+                  </Fragment>
                 ))}
             </div>
           )}
@@ -164,6 +174,8 @@ export default async function ArticlePage({
             </p>
           )}
         </article>
+
+        <AdSlot slot="footer" />
 
         {related.length > 0 && (
           <section className="article__related">

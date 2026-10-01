@@ -1,7 +1,9 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { getPublishedArticles } from "@/lib/articles";
 import { ArticleCard } from "@/components/ArticleCard";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { AdSlot } from "@/components/AdSlot";
 import { LiveWidget } from "@/components/LiveWidget";
 import { PokokBerita } from "@/components/PokokBerita";
 import { categoryLabel } from "@/lib/categories";
@@ -123,7 +125,9 @@ export default async function HomePage() {
   return (
     <main>
       <div className="container">
-        <SponsorBanner />
+        {/* Google AdSense when the admin has enabled it, otherwise the
+            "Pasang Iklan" pitch placeholder. */}
+        <AdSlot slot="header" fallback={<SponsorBanner />} />
       </div>
 
       {lead && (
@@ -153,13 +157,24 @@ export default async function HomePage() {
               </h2>
             </div>
             <div className="story-grid">
-              {gridArticles.map((a) => (
-                <ArticleCard key={a.id} article={a} />
+              {gridArticles.map((a, i) => (
+                <Fragment key={a.id}>
+                  <ArticleCard article={a} />
+                  {i === 5 && (
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <AdSlot slot="sidebar" />
+                    </div>
+                  )}
+                </Fragment>
               ))}
             </div>
           </div>
         </section>
       )}
+
+      <div className="container">
+        <AdSlot slot="footer" />
+      </div>
     </main>
   );
 }

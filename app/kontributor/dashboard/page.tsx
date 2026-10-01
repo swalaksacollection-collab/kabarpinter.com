@@ -31,14 +31,15 @@ export default async function ContributorDashboard() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, bio, role, application_status, application_reason, application_submitted_at"
+      "display_name, bio, role, suspended, application_status, application_reason, application_submitted_at"
     )
     .eq("id", user.id)
     .maybeSingle();
 
   const status = profile?.application_status ?? "none";
   const isStaff = profile?.role === "editor" || profile?.role === "admin";
-  const canWrite = status === "approved" || isStaff;
+  const suspended = profile?.suspended === true;
+  const canWrite = (status === "approved" || isStaff) && !suspended;
 
   const { data: application } = await supabase
     .from("contributor_applications")
@@ -78,9 +79,25 @@ export default async function ContributorDashboard() {
             {profile?.role === "admin" && (
               <>
                 <Link href="/redaksi/pelamar">Tinjau pelamar kontributor</Link> ·{" "}
+                <Link href="/redaksi/kontributor">Kelola kontributor</Link> ·{" "}
               </>
             )}
-            <Link href="/redaksi/review">Tinjau tulisan</Link>
+            <Link href="/redaksi/review">Tinjau tulisan</Link> ·{" "}
+            <Link href="/redaksi/ulasan">Kelola ulasan pakar</Link>
+            {profile?.role === "admin" && (
+              <>
+                {" "}
+                · <Link href="/redaksi/filter">Filter</Link> ·{" "}
+                <Link href="/redaksi/popup">Popup</Link> · <Link href="/redaksi/iklan">Iklan</Link>
+              </>
+            )}
+          </div>
+        )}
+
+        {suspended && (
+          <div className="notice notice--error" style={{ marginBottom: 32 }}>
+            <strong>Akun Anda dinonaktifkan.</strong> Anda tidak dapat mengirim tulisan baru.
+            Hubungi redaksi@kabarpinter.com bila ini keliru.
           </div>
         )}
 

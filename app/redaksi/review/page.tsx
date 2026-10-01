@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
@@ -97,8 +98,28 @@ export default async function EditorReviewPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={a.image_url} alt="" className="review-queue__image" />
                 )}
+                {a.filter_flags && a.filter_flags.length > 0 && (
+                  <div className="notice notice--info" style={{ margin: "0 0 12px" }}>
+                    <strong>Peringatan filter otomatis:</strong>
+                    <ul style={{ margin: "4px 0 0 18px" }}>
+                      {a.filter_flags.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {a.excerpt && <p className="review-queue__excerpt">{a.excerpt}</p>}
-                {a.body && <p className="review-queue__excerpt">{a.body.slice(0, 400)}…</p>}
+                {a.body && (
+                  <details className="adm-fulltext">
+                    <summary>Baca teks lengkap</summary>
+                    <div className="review-queue__excerpt" style={{ whiteSpace: "pre-wrap" }}>
+                      {a.body}
+                    </div>
+                  </details>
+                )}
+                <p style={{ fontSize: 13, margin: "8px 0 0" }}>
+                  <Link href={`/redaksi/ulasan/${a.id}`}>Edit sebelum terbit →</Link>
+                </p>
 
                 <div className="review-queue__actions">
                   <form action={approveArticle}>

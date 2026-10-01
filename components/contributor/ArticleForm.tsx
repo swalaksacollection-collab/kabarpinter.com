@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
-import { slugify } from "@/lib/slug";
+import { submitArticle } from "@/app/kontributor/actions";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -23,6 +23,7 @@ export function ArticleForm({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reasons, setReasons] = useState<string[]>([]);
   const [success, setSuccess] = useState(false);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -45,6 +46,7 @@ export function ArticleForm({
     }
     setSubmitting(true);
     setError(null);
+    setReasons([]);
     setSuccess(false);
     const supabase = createBrowserClient();
 
@@ -61,34 +63,20 @@ export function ArticleForm({
           .data.publicUrl;
       }
 
-      const baseSlug = slugify(title, new Set());
-      const payload = {
-        source_type: "contributor" as const,
-        status: "submitted" as const,
-        title: title.trim(),
-        excerpt: excerpt.trim() || null,
-        body: body.trim() || null,
-        image_url: imageUrl,
-        category_slug: categorySlug || null,
-        contributor_id: userId,
-      };
-
-      let { error: insertError } = await supabase
-        .from("articles")
-        .insert({ ...payload, slug: baseSlug });
-
-      // The slug uniqueness pre-check only sees published articles (RLS
-      // hides other users' drafts) - a genuine collision surfaces here as
-      // a unique-violation instead, so retry once with a random suffix
-      // rather than pretending false confidence in the first slug.
-      if (insertError?.code === "23505") {
-        const retrySlug = slugify(title, new Set([baseSlug]));
-        ({ error: insertError } = await supabase
-          .from("articles")
-          .insert({ ...payload, slug: retrySlug }));
+      // Validation, the redaksi filter and the insert all run on the server
+      // (app/kontributor/actions.ts) so they cannot be skipped from the browser.
+      const result = await submitArticle({
+        title,
+        excerpt,
+        body,
+        categorySlug,
+        imageUrl,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        setReasons(result.reasons ?? []);
+        return;
       }
-
-      if (insertError) throw insertError;
 
       setSuccess(true);
       setTitle("");
@@ -162,6 +150,13 @@ export function ArticleForm({
         />
       </label>
       {error && <p className="cform__error">{error}</p>}
+      {reasons.length > 0 && (
+        <ul className="cform__error" style={{ margin: "0 0 0 18px" }}>
+          {reasons.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+      )}
       {success && (
         <p className="cform__success">
           Terkirim! Artikel Anda akan tayang setelah ditinjau tim redaksi.

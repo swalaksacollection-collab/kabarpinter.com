@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Article } from "@/lib/types";
 import { categoryLabel } from "@/lib/categories";
+import { Avatar } from "@/components/Avatar";
 import { upgradeImageUrl, imageSrcSet, isImageAllowed, IMAGE_SIZES } from "@/lib/images";
 
 // `priority` = above-the-fold card: load its image eagerly. Everything else
@@ -44,7 +45,10 @@ export function ArticleCard({
         </div>
         <h3 className="story__headline">{article.title}</h3>
         <div className="story__meta">
-          <span className="story__source">
+          <span className="story__source story__byline">
+            {article.author && (
+              <Avatar name={article.author.display_name} url={article.author.avatar_url} size={22} />
+            )}
             {article.author?.display_name ?? article.source_name ?? "Kontributor"}
           </span>
         </div>
