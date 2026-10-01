@@ -174,6 +174,45 @@ articles -> an editor/admin reviews each article (publish / reject + note).
   "Redaksi Kabarpinter.com" via `source_name` (`contributor_id` is null) - no
   fictitious credentialed author was invented.
 
+## Admin panel (NEW 10-01, migration 0017, live)
+
+All under `/redaksi/*` (login required; `proxy.ts` matcher already covers it).
+Admin-only pages are hidden from editors in `AdminNav` and enforced by RLS.
+
+| Page | Who | What |
+|---|---|---|
+| `/redaksi/kontributor` | admin | Approved contributors: upload profile photo (`profiles.avatar_url`, shown on bylines), suspend/reactivate (`profiles.suspended`; blocks new submissions via `is_approved_contributor()`). |
+| `/redaksi/filter` | admin | Submission filter rules (`filter_rules`: banned_word / min_words / max_links; action flag or reject) + a tester using the same `lib/filter.ts`. |
+| `/redaksi/ulasan`, `/redaksi/ulasan/[id]` | editor+admin | Expert reviews: edit text, replace/remove illustration, hide/publish, delete (RLS delete policy for `source_type='contributor'` only). |
+| `/redaksi/popup` | admin | Promo popups (`popups`, `popup_stats`): image, WIB schedule, target paths, per-session cap, views/clicks. |
+| `/redaksi/iklan` + `/ads.txt` | admin | Google AdSense: one publisher id (`ad_settings`) + numeric slot id per placement (`ad_slots`: header, sidebar, in_article, footer). No pasted HTML on purpose. `/ads.txt` is generated from the publisher id. |
+
+- **Filter runs server-side** in `submitArticle()` (`app/kontributor/actions.ts`),
+  not in the browser. `reject` -> contributor sees reasons; `flag` -> saved in
+  `articles.filter_flags` and shown in the review queue. Known limit: a malicious
+  *approved* contributor could still insert directly via the REST API (RLS allows
+  it); the editor review remains the final gate (nothing publishes without it).
+  `filter_flags` is also readable by anon on published rows (low sensitivity).
+- **Images** for the admin go to the public bucket `site-media` via
+  `components/admin/ImageUploadField.tsx` (resized in the browser, URL stored).
+  Server actions only accept URLs inside our own buckets (`lib/media.ts`).
+- **Popup** (`components/SitePopup.tsx`, mounted in `app/layout.tsx`) fetches live
+  popups client-side so public pages stay static/ISR; schedule is enforced by RLS.
+  Always has a close button, Esc/backdrop closes, skips `/redaksi|/kontributor|/auth`,
+  and waits if the install prompt is showing. Counts are indicative only.
+- **Ads**: `components/AdSlot.tsx` (server) -> `AdUnit.tsx` (client, loads the shared
+  adsbygoogle script). AdSense is **disabled** until the owner enters the publisher
+  id + slot ids and ticks "aktifkan"; until then the home header shows the old
+  "Pasang Iklan" placeholder. Google must approve the site first.
+- **Deploy order matters**: public pages now select `profiles.avatar_url`, so
+  migration 0017 must be applied *before* pushing code that reads it (done).
+- **Deploy gotcha seen 10-01**: a normal push (`d291dfe`) was not picked up by the
+  Vercel Git integration (no deployment appeared). An empty commit
+  (`git commit --allow-empty`) re-triggered it within a minute.
+- **Not verified end-to-end by Claude**: the staff pages themselves (login is a
+  magic link). Verified live: public pages, redirects to login, anon RLS, popup
+  (shown/Esc/stats) via a temporary popup that was deleted afterwards.
+
 ## Design system
 
 - Fonts: same families as detik.com (explicit request). Montserrat
@@ -237,12 +276,12 @@ from other outlets, raise the same concern again before doing it.
   ANTARA/Liputan6/detik/CNN terms have NOT been reviewed (their robots.txt has
   no usage notice, which proves nothing about their terms).
   Liputan6/kly photos are signed at 673x379 (cannot be enlarged) but are shown.
-- **Editor tools (Phase B)**: an editor sees only the first 400 chars of a
-  submission; cannot edit before publishing, unpublish a live article, or
-  hide/delete a bad RSS article; RSS sources and users can only be managed via
-  SQL. Contributors cannot save drafts, edit, or re-submit a *rejected
-  article* (RLS locks rejected rows; only rejected *applications* can be
-  re-submitted).
+- **Editor tools (Phase B), partly done 10-01**: editors can now read the full
+  text, edit before publishing, hide/unpublish and delete *contributor* pieces
+  (`/redaksi/ulasan`). Still missing: hide/delete a bad RSS article; RSS sources
+  and users are managed via SQL. Contributors cannot save drafts, edit, or
+  re-submit a *rejected article* (RLS locks rejected rows; only rejected
+  *applications* can be re-submitted).
 - No verification of credentials beyond the admin's review of the application.
 - `PinterClip` (ex-`20detik`) has no content source (the parser only handles
   RSS `<item>`, not Atom `<entry>`); `jateng` may be empty until an item
@@ -302,4 +341,6 @@ from other outlets, raise the same concern again before doing it.
 | Editor review queue | `app/redaksi/review/page.tsx` |
 | Admin: contributor applications | `app/redaksi/pelamar/page.tsx`, `components/contributor/ApplicationForm.tsx` |
 | All design tokens/CSS | `app/globals.css` (single file, no CSS modules) |
-| DB migrations, in order | `supabase/migrations/0001..0016_*.sql` (0014/0015 = applications; 0016 = Pokok Berita summaries) |
+| DB migrations, in order | `supabase/migrations/0001..0017_*.sql` (0014/0015 = applications; 0016 = Pokok Berita summaries; 0017 = admin panel) |
+| Admin server actions | `app/redaksi/actions.ts` (staff), `app/kontributor/actions.ts` (`submitArticle`) |
+| Filter / popup / ads / media / WIB logic (pure, tested) | `lib/filter.ts`, `lib/popup.ts`, `lib/ads.ts`, `lib/media.ts`, `lib/wib.ts` |
