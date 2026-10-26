@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { upgradeImageUrl, imageSrcSet, isImageAllowed } from "./images";
+import { upgradeImageUrl, imageSrcSet, isImageAllowed, maxImageWidth } from "./images";
 
 describe("upgradeImageUrl - ANTARA", () => {
   it("raises a tiny 255x170 thumbnail to 800x533 for cards", () => {
@@ -158,5 +158,11 @@ describe("isImageAllowed (hosts whose terms forbid embedding their photos)", () 
     expect(isImageAllowed(undefined)).toBe(false);
     expect(isImageAllowed("")).toBe(false);
     expect(isImageAllowed("bukan url")).toBe(false);
+  });
+});
+
+describe("maxImageWidth for own editorial photos", () => {
+  it("treats kabarpinter.com/berita photos as sharp enough for the hero", () => {
+    expect(maxImageWidth("https://kabarpinter.com/berita/kamil-sahib-mc-award-2027.jpg")).toBeGreaterThanOrEqual(1000);
   });
 });

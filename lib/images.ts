@@ -133,6 +133,8 @@ export function maxImageWidth(url: string | null | undefined): number {
     return DETIK_WIDTHS[DETIK_WIDTHS.length - 1];
   }
   if (/\.supabase\.co\/storage\//.test(clean)) return 1600;
+  // Our own editorial photos in public/berita/ (all >= 900px wide).
+  if (/^https:\/\/(www\.)?kabarpinter\.com\/berita\//.test(clean)) return 1200;
 
   const fixed = /\/(\d+)x\d+\//.exec(clean);
   return fixed ? Number(fixed[1]) : 0;
