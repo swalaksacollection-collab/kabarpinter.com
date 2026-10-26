@@ -21,8 +21,7 @@ Selain film, Kamil berencana meluncurkan podcast untuk membagikan pandangan dan 
 Pada 26 Oktober 2026, Kamil juga bicara soal MC Award, ajang bagi pembawa acara yang digelar Yayasan Karya Pembawa Acara Indonesia. Penyelenggaraan 2027 dipimpin Ir. Edyson Hasibuan, bekerja sama dengan QQPRO Artist Management, dan didukung Perpustakaan Nasional.
 Kamil, yang pernah menjadi juri pada edisi 2024, menekankan bahwa profesi MC erat dengan literasi. Pembawa acara dituntut berwawasan luas dan piawai berkomunikasi. "Seorang MC yang baik harus memiliki literasi yang mumpuni," katanya.
 ![Kamil Sahib bersama dorongan literasi untuk MC Indonesia. Foto: Ist](/berita/kamil-sahib-pakuanpos.jpg)
-CEO QQPRO, Bunda Astrid, menyebut sejumlah pembawa acara ternama sedang disiapkan sebagai juri 2027 dan beberapa di antaranya sudah menyatakan dukungan. Edisi 2024 diikuti sekitar 20 peserta, yang oleh Kamil disebut sebagai langkah awal. Panitia berharap peserta 2027 lebih banyak, dan ajang ini dikembangkan menjadi bagian dari festival literasi dengan kegiatan di beberapa daerah.
-Catatan redaksi: berita ini dirangkum dan ditulis ulang dari laporan Putraindo News dan Pakuan Pos. Foto: dokumentasi (Ist) sebagaimana dimuat media tersebut.$body$,
+CEO QQPRO, Bunda Astrid, menyebut sejumlah pembawa acara ternama sedang disiapkan sebagai juri 2027 dan beberapa di antaranya sudah menyatakan dukungan. Edisi 2024 diikuti sekitar 20 peserta, yang oleh Kamil disebut sebagai langkah awal. Panitia berharap peserta 2027 lebih banyak, dan ajang ini dikembangkan menjadi bagian dari festival literasi dengan kegiatan di beberapa daerah.$body$,
   'https://kabarpinter.com/berita/kamil-sahib-mc-award-2027.jpg',
   'hot', 'Redaksi Kabarpinter.com', 60, '2026-10-26 13:00:00+07'
 ) on conflict (slug) do nothing;
