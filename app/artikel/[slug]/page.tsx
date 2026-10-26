@@ -10,6 +10,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { PokokBerita } from "@/components/PokokBerita";
 import { AdSlot } from "@/components/AdSlot";
 import { Avatar } from "@/components/Avatar";
+import { parseBody, isLocalImage } from "@/lib/body";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
 import { upgradeImageUrl, imageSrcSet, isImageAllowed, IMAGE_SIZES } from "@/lib/images";
@@ -152,16 +153,21 @@ export default async function ArticlePage({
 
           {article.body && (
             <div className="article__body">
-              {article.body
-                .split("\n")
-                .filter((p) => p.trim().length > 0)
-                .map((paragraph, i) => (
-                  <Fragment key={i}>
-                    <p>{paragraph}</p>
-                    {/* One in-article ad after the 3rd paragraph, only on longer pieces. */}
-                    {i === 2 && <AdSlot slot="in_article" />}
-                  </Fragment>
-                ))}
+              {parseBody(article.body, isLocalImage).map((block, i) => (
+                <Fragment key={i}>
+                  {block.type === "p" && <p>{block.text}</p>}
+                  {block.type === "h" && <h2>{block.text}</h2>}
+                  {block.type === "img" && (
+                    <figure className="article__media">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={block.src} alt={block.caption || article.title} loading="lazy" />
+                      {block.caption && <figcaption>{block.caption}</figcaption>}
+                    </figure>
+                  )}
+                  {/* One in-article ad after the 3rd block, only on longer pieces. */}
+                  {i === 2 && <AdSlot slot="in_article" />}
+                </Fragment>
+              ))}
             </div>
           )}
 
