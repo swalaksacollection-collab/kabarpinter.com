@@ -114,7 +114,7 @@ async function savePhoto(
 
 export async function importFromLinks(formData: FormData) {
   const { supabase } = await requireStaff();
-  if (!aiConfigured()) fail(BASE, "Penulis AI belum aktif: isi ANTHROPIC_API_KEY di pengaturan Vercel.");
+  if (!aiConfigured()) fail(BASE, "Penulis AI belum aktif: isi OPENROUTER_API_KEY di pengaturan Vercel.");
   const raw = str(formData, "links");
   if (str(formData, "photo_ok") !== "1") {
     fail(BASE, "Centang dulu pernyataan izin foto (atau hapus foto lewat halaman edit).");

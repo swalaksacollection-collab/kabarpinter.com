@@ -10,7 +10,7 @@ import { importFromLinks } from "./actions";
 
 export const metadata: Metadata = { title: "Impor Berita", robots: { index: false } };
 // Reading pages + AI writing can take a minute.
-export const maxDuration = 120;
+export const maxDuration = 200;
 
 type Row = { id: string; title: string; status: string; published_at: string | null; created_at: string };
 
@@ -46,7 +46,7 @@ export default async function ImportPage({
 
         {!ready && (
           <div className="notice notice--error" style={{ marginBottom: 16 }}>
-            Penulis AI belum aktif. Tambahkan <code>ANTHROPIC_API_KEY</code> di Vercel (Settings →
+            Penulis AI belum aktif. Tambahkan <code>OPENROUTER_API_KEY</code> di Vercel (Settings →
             Environment Variables), lalu deploy ulang.
           </div>
         )}

@@ -18,14 +18,70 @@ Aturan:
 - Sisipkan foto (nomor 0,1,2...) di tempat yang paling relevan setelah sebuah paragraf; pilih satu foto terbaik sebagai hero_photo (tampil di atas, jangan diulang di isi). Keterangan foto singkat; bila tidak tahu pasti pakai "Foto: Ist".
 - Judul maksimal 90 karakter, informatif, tanpa clickbait. Ringkasan (excerpt) 1-2 kalimat, maksimal 300 karakter.`;
 
+// Free OpenRouter models, tried in order until one answers (free models are
+// sometimes busy or rate-limited). Override with OPENROUTER_MODEL (comma list).
+const DEFAULT_MODELS = [
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "google/gemma-4-31b-it:free",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "openrouter/free",
+];
+
 export function aiConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return Boolean(process.env.OPENROUTER_API_KEY);
+}
+
+function schema(categories: string[]) {
+  return {
+    type: "object",
+    required: ["title", "excerpt", "category_slug", "blocks"],
+    properties: {
+      title: { type: "string" },
+      excerpt: { type: "string" },
+      category_slug: {
+        type: "string",
+        enum: categories,
+        description: CATEGORY_OPTIONS.map((c) => `${c.slug}=${c.label}`).join(", "),
+      },
+      hero_photo: { type: ["integer", "null"], description: "Nomor foto utama, atau null." },
+      blocks: {
+        type: "array",
+        description: "Urutan isi berita.",
+        items: {
+          type: "object",
+          required: ["type"],
+          properties: {
+            type: { type: "string", enum: ["p", "h", "photo"] },
+            text: { type: "string", description: "Isi paragraf (p) atau subjudul (h)." },
+            photo: { type: "integer", description: "Nomor foto (untuk type photo)." },
+            caption: { type: "string", description: "Keterangan foto (untuk type photo)." },
+          },
+        },
+      },
+    },
+  };
+}
+
+// Models that ignore tool calling still usually answer with a JSON object.
+function parseJsonLoose(text: string): unknown {
+  const t = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const start = t.indexOf("{");
+  const end = t.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  try {
+    return JSON.parse(t.slice(start, end + 1));
+  } catch {
+    return null;
+  }
 }
 
 export async function writeArticle(sources: SourceForAi[], photos: PhotoForAi[]): Promise<DraftArticle> {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error("ANTHROPIC_API_KEY belum diisi di pengaturan Vercel.");
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error("OPENROUTER_API_KEY belum diisi di pengaturan Vercel.");
+  const models = (process.env.OPENROUTER_MODEL || DEFAULT_MODELS.join(","))
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
   const categories = CATEGORY_OPTIONS.map((c) => c.slug);
 
   const sourceText = sources
@@ -37,68 +93,59 @@ export async function writeArticle(sources: SourceForAi[], photos: PhotoForAi[])
   const photoText = photos.length
     ? photos.map((p, i) => `${i}: dari ${p.source}${p.alt ? ` - ${p.alt}` : ""}`).join("\n")
     : "(tidak ada foto)";
+  const userText =
+    `Gabungkan sumber berikut menjadi satu berita.\n\n${sourceText}\n\nFoto yang tersedia:\n${photoText}\n\n` +
+    `Jawab HANYA dengan satu objek JSON (tanpa teks lain) dengan bentuk: ` +
+    `{"title":"","excerpt":"","category_slug":"${categories.join("|")}","hero_photo":0,` +
+    `"blocks":[{"type":"p","text":""},{"type":"h","text":""},{"type":"photo","photo":0,"caption":""}]}`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 4096,
-      system: SYSTEM,
-      tools: [
-        {
-          name: "tulis_berita",
-          description: "Hasilkan berita gabungan yang sudah ditulis ulang.",
-          input_schema: {
-            type: "object",
-            required: ["title", "excerpt", "category_slug", "blocks"],
-            properties: {
-              title: { type: "string" },
-              excerpt: { type: "string" },
-              category_slug: {
-                type: "string",
-                enum: categories,
-                description: CATEGORY_OPTIONS.map((c) => `${c.slug}=${c.label}`).join(", "),
-              },
-              hero_photo: { type: ["integer", "null"], description: "Nomor foto utama, atau null." },
-              blocks: {
-                type: "array",
-                description: "Urutan isi berita.",
-                items: {
-                  type: "object",
-                  required: ["type"],
-                  properties: {
-                    type: { type: "string", enum: ["p", "h", "photo"] },
-                    text: { type: "string", description: "Isi paragraf (p) atau subjudul (h)." },
-                    photo: { type: "integer", description: "Nomor foto (untuk type photo)." },
-                    caption: { type: "string", description: "Keterangan foto (untuk type photo)." },
-                  },
-                },
+  const errors: string[] = [];
+  for (const model of models) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${key}`,
+          "content-type": "application/json",
+          "http-referer": "https://kabarpinter.com",
+          "x-title": "Kabarpinter.com",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 4096,
+          temperature: 0.4,
+          messages: [
+            { role: "system", content: SYSTEM },
+            { role: "user", content: userText },
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "tulis_berita",
+                description: "Hasilkan berita gabungan yang sudah ditulis ulang.",
+                parameters: schema(categories),
               },
             },
-          },
-        },
-      ],
-      tool_choice: { type: "tool", name: "tulis_berita" },
-      messages: [
-        {
-          role: "user",
-          content: `Gabungkan sumber berikut menjadi satu berita.\n\n${sourceText}\n\nFoto yang tersedia:\n${photoText}`,
-        },
-      ],
-    }),
-    signal: AbortSignal.timeout(100_000),
-  });
-
-  if (!res.ok) {
-    const detail = (await res.text()).slice(0, 200);
-    throw new Error(`Penulis AI gagal (HTTP ${res.status}). ${detail}`);
+          ],
+          tool_choice: { type: "function", function: { name: "tulis_berita" } },
+        }),
+        signal: AbortSignal.timeout(55_000),
+      });
+      if (!res.ok) {
+        errors.push(`${model}: HTTP ${res.status}`);
+        continue;
+      }
+      const json = (await res.json()) as {
+        choices?: { message?: { content?: string | null; tool_calls?: { function?: { arguments?: string } }[] } }[];
+      };
+      const msg = json.choices?.[0]?.message;
+      const args = msg?.tool_calls?.[0]?.function?.arguments;
+      const raw = (args ? parseJsonLoose(args) : null) ?? (msg?.content ? parseJsonLoose(msg.content) : null);
+      return normalizeDraft(raw, categories, photos.length);
+    } catch (e) {
+      errors.push(`${model}: ${e instanceof Error ? e.message : "gagal"}`);
+    }
   }
-  const json = (await res.json()) as { content?: { type: string; input?: unknown }[] };
-  const tool = json.content?.find((c) => c.type === "tool_use");
-  return normalizeDraft(tool?.input, categories, photos.length);
+  throw new Error(`Semua model gratis sedang gagal/sibuk. Coba lagi sebentar lagi. (${errors.join("; ").slice(0, 200)})`);
 }
