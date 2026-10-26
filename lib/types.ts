@@ -6,7 +6,7 @@ export type Category = {
 
 export type Article = {
   id: string;
-  source_type: "rss" | "contributor";
+  source_type: "rss" | "contributor" | "redaksi";
   status: "draft" | "submitted" | "published" | "rejected";
   title: string;
   slug: string;

@@ -10,7 +10,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { PokokBerita } from "@/components/PokokBerita";
 import { AdSlot } from "@/components/AdSlot";
 import { Avatar } from "@/components/Avatar";
-import { parseBody, isLocalImage } from "@/lib/body";
+import { parseBody, isOwnBodyImage } from "@/lib/body";
 import { articleJsonLd, describeText, serializeJsonLd } from "@/lib/seo";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/site";
 import { upgradeImageUrl, imageSrcSet, isImageAllowed, IMAGE_SIZES } from "@/lib/images";
@@ -153,7 +153,7 @@ export default async function ArticlePage({
 
           {article.body && (
             <div className="article__body">
-              {parseBody(article.body, isLocalImage).map((block, i) => (
+              {parseBody(article.body, (s) => isOwnBodyImage(s, process.env.NEXT_PUBLIC_SUPABASE_URL!)).map((block, i) => (
                 <Fragment key={i}>
                   {block.type === "p" && <p>{block.text}</p>}
                   {block.type === "h" && <h2>{block.text}</h2>}

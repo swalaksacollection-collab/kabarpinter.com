@@ -31,6 +31,13 @@ export function parseBody(body: string, isAllowedSrc: (src: string) => boolean):
   return blocks;
 }
 
+// Static photos or our own Supabase buckets (what the editor panel uploads).
+export function isOwnBodyImage(src: string, supabaseUrl: string): boolean {
+  if (isLocalImage(src)) return true;
+  const base = `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/site-media/`;
+  return src.startsWith(base) && !/\s|\.\./.test(src) && src.length < 500;
+}
+
 // Own-site static photos (/berita/...) only; no protocol-relative URLs.
 export function isLocalImage(src: string): boolean {
   return /^\/[A-Za-z0-9/_.-]+\.(jpe?g|png|webp)$/i.test(src) && !src.includes("..") && !src.startsWith("//");

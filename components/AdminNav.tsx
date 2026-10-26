@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 export type AdminTab =
+  | "impor"
   | "pelamar"
   | "kontributor"
   | "review"
@@ -17,6 +18,9 @@ export function AdminNav({ current, isAdmin }: { current: AdminTab; isAdmin: boo
 
   return (
     <nav className="admin-nav" aria-label="Menu redaksi">
+      <Link href="/redaksi/impor" className={cls(current === "impor")}>
+        Impor Berita
+      </Link>
       {isAdmin && (
         <>
           <Link href="/redaksi/pelamar" className={cls(current === "pelamar")}>

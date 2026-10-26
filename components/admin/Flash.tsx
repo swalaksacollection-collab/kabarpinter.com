@@ -15,6 +15,11 @@ const OK_MESSAGES: Record<string, string> = {
   diterbitkan: "Ulasan diterbitkan.",
   disembunyikan: "Ulasan disembunyikan dari situs.",
   dihapus: "Ulasan dihapus.",
+  "draf-dibuat": "Draf berita dibuat. Periksa teks dan foto, lalu tekan Terbitkan.",
+  "berita-disimpan": "Berita disimpan.",
+  "berita-diterbitkan": "Berita diterbitkan dan naik ke beranda.",
+  "berita-disembunyikan": "Berita disembunyikan dari situs.",
+  "berita-dihapus": "Berita dihapus.",
 };
 
 // Result banner from ?ok=<code> / ?error=<message> set by the server actions.

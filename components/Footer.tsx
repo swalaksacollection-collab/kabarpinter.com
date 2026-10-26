@@ -52,6 +52,12 @@ export function Footer() {
           <span>© {new Date().getFullYear()} Kabarpinter.com</span>
           <span>Dikurasi otomatis · Diverifikasi tim redaksi</span>
         </div>
+        <nav className="footer__staff" aria-label="Pengelola situs">
+          <span>Pengelola:</span>
+          <Link href="/redaksi/kontributor">Admin</Link>
+          <Link href="/redaksi/impor">Redaksi</Link>
+          <Link href="/kontributor/dashboard">Kontributor</Link>
+        </nav>
       </div>
     </footer>
   );
