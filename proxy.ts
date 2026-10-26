@@ -10,5 +10,5 @@ export async function proxy(request: NextRequest) {
 // (`/redaksi/:path+` = sub-pages such as /redaksi/review, not the public
 // /redaksi "Tim Redaksi" page.)
 export const config = {
-  matcher: ["/kontributor/:path*", "/redaksi/:path+", "/auth/:path*"],
+  matcher: ["/kontributor/:path*", "/redaksi/:path+", "/auth/:path*", "/pengelola/:path*"],
 };

@@ -22,8 +22,8 @@ export default async function EditRedaksiPage({
 }) {
   const { id } = await params;
   const { ok, error, skip } = await searchParams;
-  const { supabase, isAdmin, isStaff } = await getStaffContext();
-  if (!isStaff) return <AccessDenied text="Halaman ini khusus untuk tim redaksi." />;
+  const { supabase, isAdmin, can } = await getStaffContext();
+  if (!can("impor")) return <AccessDenied text="Halaman ini khusus untuk tim redaksi." />;
 
   const { data } = await supabase
     .from("articles")

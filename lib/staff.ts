@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "./supabase/server";
+import { hasPermission, type Permission } from "./permissions";
 
 export type StaffRole = "contributor" | "editor" | "admin";
 
@@ -10,10 +11,13 @@ export async function getStaffContext() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/kontributor/masuk");
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (!user) redirect("/pengelola/masuk");
+  const { data } = await supabase.from("profiles").select("role, permissions").eq("id", user.id).maybeSingle();
   const role = (data?.role ?? null) as StaffRole | null;
+  const permissions = ((data as { permissions?: string[] } | null)?.permissions ?? []) as string[];
   return {
+    permissions,
+    can: (key: Permission) => hasPermission(role, permissions, key),
     supabase,
     user,
     role,

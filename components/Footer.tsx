@@ -54,9 +54,9 @@ export function Footer() {
         </div>
         <nav className="footer__staff" aria-label="Pengelola situs">
           <span>Pengelola:</span>
-          <Link href="/redaksi/kontributor">Admin</Link>
-          <Link href="/redaksi/impor">Redaksi</Link>
-          <Link href="/kontributor/dashboard">Kontributor</Link>
+          <Link href="/pengelola/masuk?sebagai=admin">Admin</Link>
+          <Link href="/pengelola/masuk?sebagai=redaksi">Redaksi</Link>
+          <Link href="/kontributor/masuk">Kontributor</Link>
         </nav>
       </div>
     </footer>

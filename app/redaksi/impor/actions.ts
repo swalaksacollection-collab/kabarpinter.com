@@ -38,7 +38,7 @@ const fail = (path: string, message: string): never =>
 
 async function requireStaff() {
   const ctx = await getStaffContext();
-  if (!ctx.isStaff) redirect("/kontributor/dashboard");
+  if (!ctx.can("impor")) redirect("/pengelola");
   return ctx;
 }
 

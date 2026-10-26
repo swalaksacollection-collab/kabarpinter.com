@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
 import { getSubmittedArticles } from "@/lib/articles";
 import { categoryLabel } from "@/lib/categories";
+import { hasPermission } from "@/lib/permissions";
 import { AdminNav } from "@/components/AdminNav";
 
 // Staff = editor or admin. The real enforcement is the database (RLS +
@@ -13,8 +14,8 @@ async function isStaff(supabase: Awaited<ReturnType<typeof createServerClient>>)
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return false;
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  return data?.role === "editor" || data?.role === "admin";
+  const { data } = await supabase.from("profiles").select("role, permissions").eq("id", user.id).maybeSingle();
+  return hasPermission(data?.role, data?.permissions, "review");
 }
 
 async function approveArticle(formData: FormData) {
@@ -45,15 +46,15 @@ export default async function EditorReviewPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/kontributor/masuk");
+  if (!user) redirect("/pengelola/masuk");
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, permissions")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.role !== "editor" && profile?.role !== "admin") {
+  if (!hasPermission(profile?.role, profile?.permissions, "review")) {
     return (
       <main className="section">
         <div className="container">

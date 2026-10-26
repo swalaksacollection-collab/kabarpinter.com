@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { CATEGORY_OPTIONS } from "@/lib/categories";
+import { hasPermission } from "@/lib/permissions";
 import { isOwnMediaUrl, isSiteMediaUrl } from "@/lib/media";
 import { safeHttpUrl } from "@/lib/popup";
 import { wibInputToIso } from "@/lib/wib";
@@ -30,11 +31,13 @@ async function requireRole(level: "admin" | "staff"): Promise<Sb> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/kontributor/masuk");
-  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (!user) redirect("/pengelola/masuk");
+  const { data } = await supabase.from("profiles").select("role, permissions").eq("id", user.id).maybeSingle();
   const role = data?.role;
-  const allowed = level === "admin" ? role === "admin" : role === "admin" || role === "editor";
-  if (!allowed) redirect("/kontributor/dashboard");
+  // "staff" actions in this file manage Ulasan Pakar -> needs that permission.
+  const allowed =
+    level === "admin" ? role === "admin" : hasPermission(role, data?.permissions, "ulasan");
+  if (!allowed) redirect("/pengelola");
   return supabase;
 }
 

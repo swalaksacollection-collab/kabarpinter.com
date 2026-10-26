@@ -41,8 +41,8 @@ export default async function OpinionsAdminPage({
   searchParams: Promise<{ ok?: string; error?: string; s?: string }>;
 }) {
   const { ok, error, s } = await searchParams;
-  const { supabase, isAdmin, isStaff } = await getStaffContext();
-  if (!isStaff) return <AccessDenied text="Halaman ini khusus untuk tim redaksi." />;
+  const { supabase, isAdmin, can } = await getStaffContext();
+  if (!can("ulasan")) return <AccessDenied text="Halaman ini khusus untuk tim redaksi." />;
 
   let q = supabase
     .from("articles")

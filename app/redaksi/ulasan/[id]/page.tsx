@@ -21,8 +21,8 @@ export default async function EditOpinionPage({
 }) {
   const { id } = await params;
   const { ok, error } = await searchParams;
-  const { supabase, isAdmin, isStaff } = await getStaffContext();
-  if (!isStaff) return <AccessDenied text="Halaman ini khusus untuk tim redaksi." />;
+  const { supabase, isAdmin, can } = await getStaffContext();
+  if (!can("ulasan")) return <AccessDenied text="Halaman ini khusus untuk tim redaksi." />;
 
   const { data } = await supabase
     .from("articles")
